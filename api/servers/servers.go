@@ -15,10 +15,16 @@ func UserServer(routes *gin.Engine,
 	{
 		user.POST("/signup", userHandler.CreateUser)
 		user.POST("/login", userAuthHandler.UserSignin)
+		user.GET("/listproducts/:page/:records", userHandler.ListProducts)
 
 		user.Use(userMiddleware.AuthorizeJWT)
 		{
-			user.GET("/listproducts/:page/:records", userHandler.ListProducts)
+			wishlist := user.Group("/wishlist")
+			{
+				wishlist.POST("/add/:userid/:productid", userHandler.AddWishlist)
+				wishlist.GET("/view/:userid/:page/:records", userHandler.ViewWishList)
+				wishlist.DELETE("/add/:userid/:productid", userHandler.DeleteWishList)
+			}
 		}
 
 	}

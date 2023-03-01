@@ -5,6 +5,7 @@ import (
 	repoInt "ajalck/e_commerce/repository/interface"
 	"ajalck/e_commerce/utils"
 	"errors"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 
@@ -44,22 +45,81 @@ func (ur *UserRepo) FindUser(c *gin.Context, email string, userRole string) (dom
 }
 
 func (ur *UserRepo) ListProducts(page, perPage int) ([]domain.ProductResponse, utils.MetaData, error) {
-	var Users []domain.ProductResponse
+	var Products []domain.ProductResponse
 	var totalRecords int64
 
 	ur.DB.Model(&domain.Products{}).Count(&totalRecords)
 	metaData, offset, err := utils.ComputeMetaData(page, perPage, int(totalRecords))
 
 	if err != nil {
-		return Users, metaData, err
+		return Products, metaData, err
 	}
 
 	result := ur.DB.Model(&domain.Products{}).Select("id", "item", "product_name", "discription", "product_image", "category_name", "brand_name", "size", "color", "unit_price", "stock", "rating").
 		Joins("inner join categories on products.category_id=categories.category_id").
-		Joins("inner join brands on products.brand_id=brands.brand_id").Offset(offset).Limit(perPage).Find(&Users)
+		Joins("inner join brands on products.brand_id=brands.brand_id").Offset(offset).Limit(perPage).Find(&Products)
 	is := errors.Is(result.Error, gorm.ErrRecordNotFound)
 	if is == true {
-		return Users, metaData, errors.New("Record not found")
+		return Products, metaData, errors.New("Record not found")
 	}
-	return Users, metaData, nil
+	return Products, metaData, nil
+}
+func (ur *UserRepo) ViewProduct(id int) (domain.ProductResponse, error) {
+
+	result := ur.DB.Model(&domain.Products{}).Where("id", id).First(&domain.Products{})
+	if is := errors.Is(result.Error, gorm.ErrRecordNotFound); is == true {
+		fmt.Println("error is ", result.Error.Error())
+		return domain.ProductResponse{}, result.Error
+	}
+	fmt.Println(domain.ProductResponse{})
+	return domain.ProductResponse{}, nil
+}
+
+//Wish List
+
+func (ur *UserRepo) AddWishlist(user_id, product_id int) error {
+
+	wishlist := domain.WishList{
+		User_ID:    user_id,
+		Product_ID: product_id,
+	}
+	result := ur.DB.Where(&domain.WishList{User_ID: user_id, Product_ID: product_id}).First(&domain.WishList{})
+	if is := errors.Is(result.Error, gorm.ErrRecordNotFound); is == false {
+		return errors.New("Selected Item is already in your wishlist")
+	}
+	result = ur.DB.Select("user_id", "product_id").Create(&wishlist)
+	if is := errors.Is(result.Error, gorm.ErrRegistered); is == true {
+		return result.Error
+	}
+	return nil
+}
+
+func (ur *UserRepo) ViewWishList(user_id, page, perPage int) ([]domain.WishListResponse, utils.MetaData, error) {
+
+	var favourites []domain.WishListResponse
+	var totalRecords int64
+
+	ur.DB.Model(&domain.WishList{}).Where("user_id", user_id).Count(&totalRecords)
+	metaData, offset, err := utils.ComputeMetaData(page, perPage, int(totalRecords))
+
+	if err != nil {
+		return favourites, metaData, err
+	}
+	result := ur.DB.Model(&domain.Products{}).Select("id", "item", "product_name", "product_image", "size", "color", "status").
+		Joins("right join wish_lists on products.id=wish_lists.product_id").Where("wish_lists.user_id", user_id).Offset(offset).Limit(perPage).Find(&favourites)
+
+	if is := errors.Is(result.Error, gorm.ErrRecordNotFound); is == true {
+		return favourites, metaData, result.Error
+	}
+
+	return favourites, metaData, nil
+}
+func (ur *UserRepo) DeleteWishList(user_id, product_id int) error {
+
+	wishlist := domain.WishList{}
+	result := ur.DB.Where(&domain.WishList{User_ID: user_id, Product_ID: product_id}).Delete(&wishlist)
+	if is := errors.Is(result.Error, gorm.ErrRegistered); is == true {
+		return result.Error
+	}
+	return nil
 }

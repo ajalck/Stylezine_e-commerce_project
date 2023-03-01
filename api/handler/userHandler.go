@@ -57,3 +57,52 @@ func (uh *UserHandler) ListProducts(c *gin.Context) {
 		c.JSON(400, err.Error())
 	}
 }
+func (uh *UserHandler) AddWishlist(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	product_id, _ := strconv.Atoi(c.Query("product_id"))
+	err := uh.userUseCase.AddWishlist(user_id, product_id)
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't add new item to wishlist", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(*c, response)
+		return
+	}
+	response := utils.SuccessResponse("New item added to wishlist", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(*c, response)
+}
+func (uh *UserHandler) ViewWishList(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	page, _ := strconv.Atoi(c.Query("page"))
+	perPage, _ := strconv.Atoi(c.Query("records"))
+	wishList, metaData, err := uh.userUseCase.ViewWishList(user_id, page, perPage)
+	var results struct {
+		WishLists []domain.WishListResponse
+		MetaData  utils.MetaData
+	}
+	results.WishLists = wishList
+	results.MetaData = metaData
+	if err != nil {
+		response := utils.ErrorResponse("couldn't reach to your wishlist", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(*c, response)
+		return
+	}
+	response := utils.SuccessResponse("Here is your wishlist...", results)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(*c, response)
+}
+func (uh *UserHandler) DeleteWishList(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	product_id, _ := strconv.Atoi(c.Query("product_id"))
+	err := uh.userUseCase.DeleteWishList(user_id, product_id)
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't remove the item from your wishlist", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(*c, response)
+		return
+	}
+	response := utils.SuccessResponse("one item removed successfully from your wishlist", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(*c, response)
+}

@@ -16,6 +16,7 @@ type User struct {
 	Token        string `json:"token"`
 }
 type WishList struct {
-	User_ID    int `json:"user_id"`
-	Product_ID int `json:"product_id"`
+	Wishlist_ID uint `json:"category_id" gorm:"primarykey;unique;AUTO_INCREMENT"`
+	User_ID     int  `json:"user_id"`
+	Product_ID  int  `json:"product_id"`
 }

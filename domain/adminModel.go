@@ -14,6 +14,8 @@ type Products struct {
 	Category      Category `json:"-" gorm:"foreignkey:Category_id;references:Category_ID"`
 	Brand_id      uint     `json:"brand_id" gorm:"not null"`
 	Brand         Brand    `json:"-" gorm:"foreignkey:Brand_id;references:Brand_ID"`
+	Wishlist_id   uint     `json:"wishlist_id"`
+	WishList      WishList `json:"-" gorm:"foreignkey:Wishlist_id;references:Wishlist_ID"`
 	Size          string   `json:"size" gorm:"not null"`
 	Color         string   `json:"color" gorm:"not null"`
 	Unit_Price    float32  `json:"unit_price"`

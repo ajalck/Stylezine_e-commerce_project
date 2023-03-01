@@ -257,7 +257,7 @@ func (ah *AdminHandler) AddProducts(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, gin.H{"success": "New Product added successfully "})
 	}
-	
+
 }
 func (ah *AdminHandler) EditProducts(c *gin.Context) {
 

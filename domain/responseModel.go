@@ -21,7 +21,7 @@ type ProductResponse struct {
 	Product_Image string  `json:"product_image"`
 	Category_name string  `json:"category_name"`
 	Brand_name    string  `json:"brand_name"`
-	Size          string  `json:"size max=3" gorm:"not null"`
+	Size          string  `json:"size" gorm:"not null"`
 	Color         string  `json:"color" gorm:"not null"`
 	Unit_Price    float32 `json:"unit_price"`
 	Stock         uint    `json:"stock"`
@@ -33,4 +33,13 @@ type SignedDetails struct {
 	Username string
 	UserRole string
 	jwt.StandardClaims
+}
+type WishListResponse struct {
+	ID            int    `json:"id"`
+	Item          string `json:"item"`
+	Product_Name  string `json:"product_name"`
+	Product_Image string `json:"product_image"`
+	Size          string `json:"size" gorm:"not null"`
+	Color         string `json:"color" gorm:"not null"`
+	Status        string `json:"status"`
 }
