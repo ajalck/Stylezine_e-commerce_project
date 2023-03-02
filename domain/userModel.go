@@ -20,3 +20,10 @@ type WishList struct {
 	User_ID     int  `json:"user_id"`
 	Product_ID  int  `json:"product_id"`
 }
+type Cart struct {
+	Cart_ID     uint    `json:"cart_id" gorm:"primarykey;unique;AUTO_INCREMENT"`
+	User_ID     int     `json:"user_id"`
+	Product_ID  int     `json:"product_id"`
+	Count       int     `json:"count"`
+	Total_Price float32 `json:"total_price"`
+}

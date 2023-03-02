@@ -23,7 +23,16 @@ func UserServer(routes *gin.Engine,
 			{
 				wishlist.POST("/add/:userid/:productid", userHandler.AddWishlist)
 				wishlist.GET("/view/:userid/:page/:records", userHandler.ViewWishList)
-				wishlist.DELETE("/add/:userid/:productid", userHandler.DeleteWishList)
+				{
+					wishlist.POST("/addcart/:userid/:productid", userHandler.AddCart)
+				}
+				wishlist.DELETE("/remove/:userid/:productid", userHandler.DeleteWishList)
+			}
+			cart := user.Group("/cart")
+			{
+				cart.POST("/add/:userid/:productid", userHandler.AddCart)
+				cart.GET("/view/:userid/:page/:records", userHandler.ViewCart)
+				cart.DELETE("/remove/:userid/:productid", userHandler.DeleteCart)
 			}
 		}
 
