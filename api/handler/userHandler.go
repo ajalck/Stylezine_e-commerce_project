@@ -57,6 +57,9 @@ func (uh *UserHandler) ListProducts(c *gin.Context) {
 		c.JSON(400, err.Error())
 	}
 }
+
+//Wishlist
+
 func (uh *UserHandler) AddWishlist(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Query("user_id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
@@ -64,12 +67,12 @@ func (uh *UserHandler) AddWishlist(c *gin.Context) {
 	if err != nil {
 		response := utils.ErrorResponse("Couldn't add new item to wishlist", err.Error(), nil)
 		c.Writer.WriteHeader(400)
-		utils.ResponseJSON(*c, response)
+		utils.ResponseJSON(c, response)
 		return
 	}
 	response := utils.SuccessResponse("New item added to wishlist", nil)
 	c.Writer.WriteHeader(200)
-	utils.ResponseJSON(*c, response)
+	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) ViewWishList(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Query("user_id"))
@@ -85,12 +88,12 @@ func (uh *UserHandler) ViewWishList(c *gin.Context) {
 	if err != nil {
 		response := utils.ErrorResponse("couldn't reach to your wishlist", err.Error(), nil)
 		c.Writer.WriteHeader(400)
-		utils.ResponseJSON(*c, response)
+		utils.ResponseJSON(c, response)
 		return
 	}
 	response := utils.SuccessResponse("Here is your wishlist...", results)
 	c.Writer.WriteHeader(200)
-	utils.ResponseJSON(*c, response)
+	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) DeleteWishList(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Query("user_id"))
@@ -99,10 +102,64 @@ func (uh *UserHandler) DeleteWishList(c *gin.Context) {
 	if err != nil {
 		response := utils.ErrorResponse("Couldn't remove the item from your wishlist", err.Error(), nil)
 		c.Writer.WriteHeader(400)
-		utils.ResponseJSON(*c, response)
+		utils.ResponseJSON(c, response)
 		return
 	}
 	response := utils.SuccessResponse("one item removed successfully from your wishlist", nil)
 	c.Writer.WriteHeader(200)
-	utils.ResponseJSON(*c, response)
+	utils.ResponseJSON(c, response)
+}
+
+//Cart
+
+func (uh *UserHandler) AddCart(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	product_id, _ := strconv.Atoi(c.Query("product_id"))
+	err := uh.userUseCase.AddCart(user_id, product_id)
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't add new item to cart", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("New item added to cart", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
+func (uh *UserHandler) ViewCart(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	page, _ := strconv.Atoi(c.Query("page"))
+	perPage, _ := strconv.Atoi(c.Query("records"))
+	cart, metaData, err := uh.userUseCase.ViewCart(user_id, page, perPage)
+	results := struct {
+		cart     []domain.CartResponse
+		MetaData utils.MetaData
+	}{
+		cart:     cart,
+		MetaData: metaData,
+	}
+	if err != nil {
+		response := utils.ErrorResponse("couldn't reach to your cart", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("Here is your cart...", results.cart)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+	c.JSON(200, results.MetaData)
+}
+func (uh *UserHandler) DeleteCart(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	product_id, _ := strconv.Atoi(c.Query("product_id"))
+	err := uh.userUseCase.DeleteCart(user_id, product_id)
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't remove an item from your cart", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("One item removed successfully from your cart", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
 }

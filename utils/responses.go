@@ -33,7 +33,7 @@ func SuccessResponse(message string, data interface{}) Response {
 	}
 	return SuccResponse
 }
-func ResponseJSON(c gin.Context, response Response) {
+func ResponseJSON(c *gin.Context, response Response) {
 	c.Writer.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(c.Writer).Encode(response)
 }

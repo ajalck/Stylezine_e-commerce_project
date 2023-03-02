@@ -123,3 +123,80 @@ func (ur *UserRepo) DeleteWishList(user_id, product_id int) error {
 	}
 	return nil
 }
+
+//Cart
+
+func (ur *UserRepo) AddCart(user_id, product_id int) error {
+
+	product := &domain.Products{}
+
+	ur.DB.Table("products").Select("unit_price").Where("id", product_id).First(&product)
+	unit_price := product.Unit_Price
+	cart := &domain.Cart{
+		User_ID:     user_id,
+		Product_ID:  product_id,
+		Count:       1,
+		Total_Price: unit_price,
+	}
+	Cart, err := ur.CheckExistency(user_id, product_id)
+	if err == nil {
+		Cart.Count = Cart.Count + 1
+		Cart.Total_Price = float32(Cart.Count) * unit_price
+		ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Count: Cart.Count, Total_Price: Cart.Total_Price})
+		return nil
+	}
+
+	result := ur.DB.Select("user_id", "product_id", "count", "total_price").Create(&cart)
+	if is := errors.Is(result.Error, gorm.ErrRegistered); is == true {
+		return result.Error
+	}
+	return nil
+}
+
+func (ur *UserRepo) CheckExistency(user_id, product_id int) (*domain.Cart, error) {
+
+	cart := &domain.Cart{}
+	result := ur.DB.Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).First(&cart)
+	return cart, result.Error
+}
+
+func (ur *UserRepo) ViewCart(user_id, page, perPage int) ([]domain.CartResponse, utils.MetaData, error) {
+
+	var cart []domain.CartResponse
+	var totalRecords int64
+
+	ur.DB.Model(&domain.Cart{}).Where("user_id", user_id).Count(&totalRecords)
+	metaData, offset, err := utils.ComputeMetaData(page, perPage, int(totalRecords))
+
+	if err != nil {
+		return cart, metaData, err
+	}
+	result := ur.DB.Model(&domain.Products{}).Select("user_id", "product_id", "item", "product_name", "product_image", "size", "color", "count", "total_price", "status").
+		Joins("right join carts on products.id=carts.product_id").Where("carts.user_id", user_id).Offset(offset).Limit(perPage).Find(&cart)
+
+	if is := errors.Is(result.Error, gorm.ErrRecordNotFound); is == true {
+		return cart, metaData, result.Error
+	}
+	fmt.Println(cart)
+	return cart, metaData, nil
+}
+
+func (ur *UserRepo) DeleteCart(user_id, product_id int) error {
+	cart := &domain.Cart{}
+	Cart, err := ur.CheckExistency(user_id, product_id)
+	if err == nil {
+		unit_price := (Cart.Total_Price / float32(Cart.Count))
+		if Cart.Count > 1 {
+			Cart.Count = Cart.Count - 1
+			Cart.Total_Price = unit_price * float32(Cart.Count)
+			ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Count: Cart.Count, Total_Price: Cart.Total_Price})
+			return nil
+		}
+		result := ur.DB.Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Delete(&cart)
+		if result.Error != nil {
+			return result.Error
+		}
+		return nil
+	}
+	return err
+}

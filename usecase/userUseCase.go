@@ -65,6 +65,9 @@ func (uc *userUseCase) ListProducts(page, perPage int) ([]domain.ProductResponse
 	}
 	return users, metaData, nil
 }
+
+//Wishlist
+
 func (uc *userUseCase) AddWishlist(user_id, product_id int) error {
 	err := uc.userRepo.AddWishlist(user_id, product_id)
 	if err != nil {
@@ -81,6 +84,30 @@ func (uc *userUseCase) ViewWishList(user_id, page, perPage int) ([]domain.WishLi
 }
 func (uc *userUseCase) DeleteWishList(user_id, product_id int) error {
 	err := uc.userRepo.DeleteWishList(user_id, product_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//Cart
+
+func (uc *userUseCase) AddCart(user_id, product_id int) error {
+	err := uc.userRepo.AddCart(user_id, product_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (uc *userUseCase) ViewCart(user_id, page, perPage int) ([]domain.CartResponse, utils.MetaData, error) {
+	carts, metaData, err := uc.userRepo.ViewCart(user_id, page, perPage)
+	if err != nil {
+		return carts, metaData, err
+	}
+	return carts, metaData, nil
+}
+func (uc *userUseCase) DeleteCart(user_id, product_id int) error {
+	err := uc.userRepo.DeleteCart(user_id, product_id)
 	if err != nil {
 		return err
 	}

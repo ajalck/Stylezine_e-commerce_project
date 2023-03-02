@@ -24,5 +24,8 @@ func SyncDB(db *gorm.DB) {
 	if err := (db.AutoMigrate(&domain.WishList{})); err != nil {
 		log.Println("Failed to sync 'WishList' table")
 	}
+	if err := (db.AutoMigrate(&domain.Cart{})); err != nil {
+		log.Println("Failed to sync 'Cart' table")
+	}
 
 }

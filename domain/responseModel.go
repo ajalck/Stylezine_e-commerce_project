@@ -43,3 +43,15 @@ type WishListResponse struct {
 	Color         string `json:"color" gorm:"not null"`
 	Status        string `json:"status"`
 }
+type CartResponse struct {
+	User_id       int     `json:"user_id"`
+	Product_id    int     `json:"product_id"`
+	Item          string  `json:"item"`
+	Product_Name  string  `json:"product_name"`
+	Product_Image string  `json:"product_image"`
+	Size          string  `json:"size" gorm:"not null"`
+	Color         string  `json:"color" gorm:"not null"`
+	Count         int     `json:"count"`
+	TotalPrice    float32 `json:"total_price"`
+	Status        string  `json:"status"`
+}
