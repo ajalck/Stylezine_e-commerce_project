@@ -113,3 +113,27 @@ func (uc *userUseCase) DeleteCart(user_id, product_id int) error {
 	}
 	return nil
 }
+
+//Shipping
+
+func (uc *userUseCase) AddShippingDetails(user_id int, newAddress domain.ShippingDetails) error {
+	err := uc.userRepo.AddShippingDetails(user_id, newAddress)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (uc *userUseCase) ListShippingDetails(user_id int) ([]domain.ShippingDetailsResponse, error) {
+	shippingDetails, err := uc.userRepo.ListShippingDetails(user_id)
+	if err != nil {
+		return shippingDetails, err
+	}
+	return shippingDetails, nil
+}
+func (uc *userUseCase) DeleteShippingDetails(user_id, address_id int) error {
+	err := uc.userRepo.DeleteShippingDetails(user_id, address_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

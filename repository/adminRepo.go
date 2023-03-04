@@ -61,7 +61,7 @@ func (ar *AdminRepo) ListUsers(page, perPage int) ([]domain.UserResponse, utils.
 func (ar *AdminRepo) ViewUser(id int) (domain.UserResponse, error) {
 
 	User := domain.UserResponse{}
-	ar.DB.Raw("SELECT id,first_name,last_name,email,gender,phone,status,user_role FROM users WHERE id=?,user_role=?;", id, "user").Scan(&User)
+	ar.DB.Table("users").Select("id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where("id=?", id).Where("user_role", "user").Find(&User)
 	if User.ID == 0 {
 		err := errors.New("no user found")
 		return User, err

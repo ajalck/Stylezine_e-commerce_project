@@ -200,3 +200,52 @@ func (ur *UserRepo) DeleteCart(user_id, product_id int) error {
 	}
 	return err
 }
+
+//Shipping
+
+func (ur *UserRepo) AddShippingDetails(user_id int, newAddress domain.ShippingDetails) error {
+
+	address := &domain.ShippingDetails{}
+	result := ur.DB.Where(&domain.ShippingDetails{Address: newAddress.Address, User_ID: uint(user_id)}).First(&address)
+	if result.Error == nil {
+		return errors.New("Entered input is already one of your shipping details")
+	}
+	result = ur.DB.Create(&domain.ShippingDetails{First_Name: newAddress.First_Name,
+		Last_Name: newAddress.Last_Name,
+		Email:     newAddress.Email,
+		Phone:     newAddress.Phone,
+		City:      newAddress.City,
+		Street:    newAddress.Street,
+		Address:   newAddress.Address,
+		Pin_code:  newAddress.Pin_code,
+		Land_Mark: newAddress.Land_Mark,
+		User_ID:   uint(user_id)})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+func (ur *UserRepo) ListShippingDetails(user_id int) ([]domain.ShippingDetailsResponse, error) {
+	ShippingAddRes := []domain.ShippingDetailsResponse{}
+	var totalRecords int64
+	result := ur.DB.Table("shipping_details").Where(&domain.ShippingDetails{User_ID: uint(user_id)}).
+		Select("id", "user_id", "concat(first_name,' ',last_name)as name", "email", "phone", "city", "street", "address", "pin_code", "land_mark").
+		Where("deleted_at IS NULL").Find(&ShippingAddRes).Count(&totalRecords)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	if totalRecords == 0 {
+		return nil, errors.New("No records found")
+	}
+	return ShippingAddRes, nil
+}
+func (ur *UserRepo) DeleteShippingDetails(user_id, address_id int) error {
+	shipping_dtl := &domain.ShippingDetails{}
+	fmt.Println(user_id)
+	result := ur.DB.Where("id", address_id).Delete(&shipping_dtl)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
