@@ -34,10 +34,14 @@ func UserServer(routes *gin.Engine,
 				cart.GET("/view/:userid/:page/:records", userHandler.ViewCart)
 				cart.DELETE("/remove/:userid/:productid", userHandler.DeleteCart)
 			}
+			shipping := user.Group("/shipping")
+			{
+				shipping.POST("/adddetails/:userid", userHandler.AddShippingDetails)
+				shipping.GET("/listdetails/:userid", userHandler.ListShippingDetails)
+				shipping.DELETE("/deletedetails/:userid/:addressid", userHandler.DeleteShippingDetails)
+			}
 		}
-
 	}
-
 }
 func AdminServer(routes *gin.Engine,
 	adminHandler handler.AdminHandler,

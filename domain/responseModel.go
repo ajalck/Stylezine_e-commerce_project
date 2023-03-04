@@ -55,3 +55,15 @@ type CartResponse struct {
 	TotalPrice    float32 `json:"total_price"`
 	Status        string  `json:"status"`
 }
+type ShippingDetailsResponse struct {
+	ID        int    `json:"id"`
+	User_ID   int    `json:"user_id"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	Phone     string `json:"phone"`
+	City      string `json:"city"`
+	Street    string `json:"street"`
+	Address   string `json:"address"`
+	Pin_code  string `json:"pin_code"`
+	Land_Mark string `json:"land_mark"`
+}

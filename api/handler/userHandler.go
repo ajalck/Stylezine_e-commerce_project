@@ -22,7 +22,7 @@ func NewUserHandler(userUseCase services.UserUseCase) *UserHandler {
 func (uh *UserHandler) CreateUser(c *gin.Context) {
 	var newUser domain.User
 	if err := c.Bind(&newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Signup Inputs"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -30,7 +30,7 @@ func (uh *UserHandler) CreateUser(c *gin.Context) {
 
 	if err != nil {
 
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't Create a new user"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	} else {
 		c.JSON(http.StatusFound, gin.H{"message": "New user created successfully"})
@@ -161,5 +161,56 @@ func (uh *UserHandler) DeleteCart(c *gin.Context) {
 	}
 	response := utils.SuccessResponse("One item removed successfully from your cart", nil)
 	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
+
+//Shipping
+
+func (uh *UserHandler) AddShippingDetails(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	var newAddress domain.ShippingDetails
+	if err := c.Bind(&newAddress); err != nil {
+		response := utils.ErrorResponse("Invalid inputs", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusBadRequest)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	err := uh.userUseCase.AddShippingDetails(user_id, newAddress)
+	if err != nil {
+		response := utils.ErrorResponse("Failed to add new shipping details", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusConflict)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("New shipping details added successfully", nil)
+	c.Writer.WriteHeader(http.StatusOK)
+	utils.ResponseJSON(c, response)
+}
+func (uh *UserHandler) ListShippingDetails(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	shippingDetails, err := uh.userUseCase.ListShippingDetails(user_id)
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't list shipping details", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusNotFound)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("Here is your shipping details", shippingDetails)
+	c.Writer.WriteHeader(http.StatusOK)
+	utils.ResponseJSON(c, response)
+}
+
+func (uh *UserHandler) DeleteShippingDetails(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	address_id, _ := strconv.Atoi(c.Query("address_id"))
+	err := uh.userUseCase.DeleteShippingDetails(user_id, address_id)
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't delete shipping details", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusNotFound)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("successfully removed selected shipping details", nil)
+	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
 }
