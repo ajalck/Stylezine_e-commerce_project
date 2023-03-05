@@ -21,7 +21,7 @@ func UserServer(routes *gin.Engine,
 		{
 			wishlist := user.Group("/wishlist")
 			{
-				wishlist.POST("/add/:userid/:productid", userHandler.AddWishlist)
+				wishlist.POST("/add/:productid", userHandler.AddWishlist)
 				wishlist.GET("/view/:userid/:page/:records", userHandler.ViewWishList)
 				{
 					wishlist.POST("/addcart/:userid/:productid", userHandler.AddCart)

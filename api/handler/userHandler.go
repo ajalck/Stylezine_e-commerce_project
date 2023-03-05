@@ -4,6 +4,7 @@ import (
 	"ajalck/e_commerce/domain"
 	services "ajalck/e_commerce/usecase/interface"
 	"ajalck/e_commerce/utils"
+	"fmt"
 	"strconv"
 
 	"net/http"
@@ -61,7 +62,8 @@ func (uh *UserHandler) ListProducts(c *gin.Context) {
 //Wishlist
 
 func (uh *UserHandler) AddWishlist(c *gin.Context) {
-	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
+	fmt.Println(user_id)
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 	err := uh.userUseCase.AddWishlist(user_id, product_id)
 	if err != nil {
