@@ -17,7 +17,6 @@ type AdminRepository interface {
 	ViewUser(id int) (domain.UserResponse, error)
 	BlockUser(id int)
 	UnblockUser(id int)
-	// ListBlockedUsers()
 
 	AddProducts(products domain.Products) error
 	EditProducts(products domain.Products) error
@@ -32,4 +31,8 @@ type AdminRepository interface {
 	AddBrand(brand domain.Brand) error
 	EditBrand(brand domain.Brand) error
 	DeleteBrand(brand domain.Brand) error
+
+	AddCoupon(coupon domain.Coupon)error
+	ListCoupon(page, perPage int) ([]domain.CouponResponse, utils.MetaData, error)
+	DeleteCoupon(coupon_id int) error 
 }

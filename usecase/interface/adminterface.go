@@ -28,6 +28,10 @@ type AdminUseCase interface {
 	AddProducts(products domain.Products) error
 	EditProducts(products domain.Products) error
 	DeleteProducts(products domain.Products) error
+
+	AddCoupon(coupon domain.Coupon) error
+	ListCoupon(page, perPage int) ([]domain.CouponResponse, utils.MetaData, error)
+	DeleteCoupon(coupon_id int) error
 }
 type AdminAuth interface {
 	VerifyAdmin(c *gin.Context, email string, password, userRole string) (bool, error)

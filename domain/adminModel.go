@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -33,4 +35,14 @@ type Brand struct {
 	Brand_ID          uint   `json:"brand_id" gorm:"primarykey;autoIncrement:true;unique"`
 	Brand_Name        string `json:"brand_name" gorm:"unique"`
 	Brand_Discription string `json:"brand_discription"`
+}
+type Coupon struct {
+	gorm.Model
+	Coupon_Code     string        `json:"coupon_code"`
+	Discount_amount float32       `json:"discount_amount"`
+	User_ID         uint          `json:"user_id"`
+	Product_ID      uint          `json:"product_id"`
+	Min_Cost        float32       `json:"min_cost"`
+	Expires_At      time.Time     `json:"expires_at"`
+	Coupon_Status   string        `json:"coupon_status"`
 }

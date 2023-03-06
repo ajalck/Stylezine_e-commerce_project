@@ -289,3 +289,60 @@ func (ah *AdminHandler) DeleteProducts(c *gin.Context) {
 	}
 
 }
+
+// Coupon
+func (ah *AdminHandler) AddCoupon(c *gin.Context) {
+	newCoupon := domain.Coupon{}
+	if err := c.Bind(&newCoupon); err != nil {
+		response := utils.ErrorResponse("Invalid inputs !", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusBadRequest)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	if err := ah.adminUseCase.AddCoupon(newCoupon); err != nil {
+		response := utils.ErrorResponse("Couldn't add coupon", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusNotFound)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("New Coupon added", nil)
+	c.Writer.WriteHeader(http.StatusOK)
+	utils.ResponseJSON(c, response)
+	return
+
+}
+func (ah *AdminHandler) ListCoupon(c *gin.Context) {
+	page, _ := strconv.Atoi(c.Query("page"))
+	perPage, _ := strconv.Atoi(c.Query("records"))
+	coupon, metaData, err := ah.adminUseCase.ListCoupon(page, perPage)
+	results := struct {
+		coupon   []domain.CouponResponse
+		MetaData utils.MetaData
+	}{
+		coupon:   coupon,
+		MetaData: metaData,
+	}
+	if err != nil {
+		response := utils.ErrorResponse("couldn't list coupons", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("Here is the coupons", results.coupon)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+	c.JSON(200, results.MetaData)
+}
+func (ah *AdminHandler) DeleteCoupon(c *gin.Context) {
+	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
+	err := ah.adminUseCase.DeleteCoupon(coupon_id)
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't remove the coupon", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("One coupon removed successfully", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
