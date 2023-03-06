@@ -214,3 +214,9 @@ func (uh *UserHandler) DeleteShippingDetails(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
 }
+func (uh *UserHandler) PlaceOrder(c *gin.Context) {
+	user_id,_:=strconv.Atoi(c.Writer.Header().Get("id"))
+	product_id,_:=strconv.Atoi(c.Query("product_id"))
+	address_id,_:=strconv.Atoi(c.Query("address_id"))
+	
+}
