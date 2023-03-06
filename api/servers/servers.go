@@ -40,6 +40,10 @@ func UserServer(routes *gin.Engine,
 				shipping.GET("/listdetails", userHandler.ListShippingDetails)
 				shipping.DELETE("/deletedetails/:addressid", userHandler.DeleteShippingDetails)
 			}
+			order:=user.Group("/order")
+			{
+				order.POST("/place/:productid/:shippingid",userHandler.PlaceOrder)
+			}
 		}
 	}
 }
