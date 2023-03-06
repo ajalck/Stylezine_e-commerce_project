@@ -22,23 +22,23 @@ func UserServer(routes *gin.Engine,
 			wishlist := user.Group("/wishlist")
 			{
 				wishlist.POST("/add/:productid", userHandler.AddWishlist)
-				wishlist.GET("/view/:userid/:page/:records", userHandler.ViewWishList)
+				wishlist.GET("/view/:page/:records", userHandler.ViewWishList)
 				{
-					wishlist.POST("/addcart/:userid/:productid", userHandler.AddCart)
+					wishlist.POST("/addcart/:productid", userHandler.AddCart)
 				}
-				wishlist.DELETE("/remove/:userid/:productid", userHandler.DeleteWishList)
+				wishlist.DELETE("/remove/:productid", userHandler.DeleteWishList)
 			}
 			cart := user.Group("/cart")
 			{
-				cart.POST("/add/:userid/:productid", userHandler.AddCart)
-				cart.GET("/view/:userid/:page/:records", userHandler.ViewCart)
-				cart.DELETE("/remove/:userid/:productid", userHandler.DeleteCart)
+				cart.POST("/add/:productid", userHandler.AddCart)
+				cart.GET("/view/:page/:records", userHandler.ViewCart)
+				cart.DELETE("/remove/:productid", userHandler.DeleteCart)
 			}
 			shipping := user.Group("/shipping")
 			{
-				shipping.POST("/adddetails/:userid", userHandler.AddShippingDetails)
-				shipping.GET("/listdetails/:userid", userHandler.ListShippingDetails)
-				shipping.DELETE("/deletedetails/:userid/:addressid", userHandler.DeleteShippingDetails)
+				shipping.POST("/adddetails", userHandler.AddShippingDetails)
+				shipping.GET("/listdetails", userHandler.ListShippingDetails)
+				shipping.DELETE("/deletedetails/:addressid", userHandler.DeleteShippingDetails)
 			}
 		}
 	}

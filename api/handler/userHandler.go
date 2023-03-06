@@ -4,7 +4,6 @@ import (
 	"ajalck/e_commerce/domain"
 	services "ajalck/e_commerce/usecase/interface"
 	"ajalck/e_commerce/utils"
-	"fmt"
 	"strconv"
 
 	"net/http"
@@ -63,7 +62,6 @@ func (uh *UserHandler) ListProducts(c *gin.Context) {
 
 func (uh *UserHandler) AddWishlist(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
-	fmt.Println(user_id)
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 	err := uh.userUseCase.AddWishlist(user_id, product_id)
 	if err != nil {
@@ -77,7 +75,7 @@ func (uh *UserHandler) AddWishlist(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) ViewWishList(c *gin.Context) {
-	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	page, _ := strconv.Atoi(c.Query("page"))
 	perPage, _ := strconv.Atoi(c.Query("records"))
 	wishList, metaData, err := uh.userUseCase.ViewWishList(user_id, page, perPage)
@@ -98,7 +96,7 @@ func (uh *UserHandler) ViewWishList(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) DeleteWishList(c *gin.Context) {
-	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 	err := uh.userUseCase.DeleteWishList(user_id, product_id)
 	if err != nil {
@@ -115,7 +113,7 @@ func (uh *UserHandler) DeleteWishList(c *gin.Context) {
 //Cart
 
 func (uh *UserHandler) AddCart(c *gin.Context) {
-	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 	err := uh.userUseCase.AddCart(user_id, product_id)
 	if err != nil {
@@ -129,7 +127,7 @@ func (uh *UserHandler) AddCart(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) ViewCart(c *gin.Context) {
-	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	page, _ := strconv.Atoi(c.Query("page"))
 	perPage, _ := strconv.Atoi(c.Query("records"))
 	cart, metaData, err := uh.userUseCase.ViewCart(user_id, page, perPage)
@@ -152,7 +150,7 @@ func (uh *UserHandler) ViewCart(c *gin.Context) {
 	c.JSON(200, results.MetaData)
 }
 func (uh *UserHandler) DeleteCart(c *gin.Context) {
-	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 	err := uh.userUseCase.DeleteCart(user_id, product_id)
 	if err != nil {
@@ -169,7 +167,7 @@ func (uh *UserHandler) DeleteCart(c *gin.Context) {
 //Shipping
 
 func (uh *UserHandler) AddShippingDetails(c *gin.Context) {
-	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	var newAddress domain.ShippingDetails
 	if err := c.Bind(&newAddress); err != nil {
 		response := utils.ErrorResponse("Invalid inputs", err.Error(), nil)
@@ -189,7 +187,7 @@ func (uh *UserHandler) AddShippingDetails(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) ListShippingDetails(c *gin.Context) {
-	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	shippingDetails, err := uh.userUseCase.ListShippingDetails(user_id)
 	if err != nil {
 		response := utils.ErrorResponse("Couldn't list shipping details", err.Error(), nil)
@@ -203,7 +201,7 @@ func (uh *UserHandler) ListShippingDetails(c *gin.Context) {
 }
 
 func (uh *UserHandler) DeleteShippingDetails(c *gin.Context) {
-	user_id, _ := strconv.Atoi(c.Query("user_id"))
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	address_id, _ := strconv.Atoi(c.Query("address_id"))
 	err := uh.userUseCase.DeleteShippingDetails(user_id, address_id)
 	if err != nil {

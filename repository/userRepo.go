@@ -83,7 +83,11 @@ func (ur *UserRepo) AddWishlist(user_id, product_id int) error {
 		User_ID:    user_id,
 		Product_ID: product_id,
 	}
-	result := ur.DB.Where(&domain.WishList{User_ID: user_id, Product_ID: product_id}).First(&domain.WishList{})
+	result := ur.DB.Where("id", product_id).First(&domain.Products{})
+	if result.Error != nil {
+		return errors.New("Product not found")
+	}
+	result = ur.DB.Where(&domain.WishList{User_ID: user_id, Product_ID: product_id}).First(&domain.WishList{})
 	if is := errors.Is(result.Error, gorm.ErrRecordNotFound); is == false {
 		return errors.New("Selected Item is already in your wishlist")
 	}
@@ -117,10 +121,11 @@ func (ur *UserRepo) ViewWishList(user_id, page, perPage int) ([]domain.WishListR
 func (ur *UserRepo) DeleteWishList(user_id, product_id int) error {
 
 	wishlist := domain.WishList{}
-	result := ur.DB.Where(&domain.WishList{User_ID: user_id, Product_ID: product_id}).Delete(&wishlist)
-	if is := errors.Is(result.Error, gorm.ErrRegistered); is == true {
+	result := ur.DB.Where(&domain.WishList{User_ID: user_id, Product_ID: product_id}).First(&wishlist)
+	if result.Error != nil {
 		return result.Error
 	}
+	ur.DB.Where(&domain.WishList{User_ID: user_id, Product_ID: product_id}).Delete(&wishlist)
 	return nil
 }
 
