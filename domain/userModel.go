@@ -42,10 +42,13 @@ type ShippingDetails struct {
 }
 type Order struct {
 	gorm.Model
-	User_ID     uint    `json:"user_id" gorm:"not null"`
-	Product_ID  uint    `json:"product_id" gorm:"not null"`
-	Shipping_ID uint    `json:"shipping_id" gorm:"not null"`
-	Quantity    int     `json:"quantity" gorm:"not null"`
-	GST         int     `json:"gst"`
-	TotalPrice  float32 `json:"totalprice"`
+	User_ID         uint    `json:"user_id" gorm:"not null"`
+	Product_ID      uint    `json:"product_id" gorm:"not null"`
+	Shipping_ID     uint    `json:"shipping_id" gorm:"not null"`
+	Quantity        int     `json:"quantity" gorm:"not null"`
+	GST             int     `json:"gst"`
+	Discount        float32 `json:"discount"`
+	TotalPrice      float32 `json:"totalprice"`
+	Mode_of_Payment string  `json:"mode_of_payment"`
+	Order_Status    string  `json:"order_status"`
 }
