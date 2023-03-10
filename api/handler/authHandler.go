@@ -3,6 +3,7 @@ package handler
 import (
 	"ajalck/e_commerce/domain"
 	services "ajalck/e_commerce/usecase/interface"
+	_ "ajalck/e_commerce/utils"
 	"fmt"
 	"net/http"
 
@@ -37,6 +38,32 @@ func NewAdminAuthHandler(
 	}
 }
 
+// @title Go + Gin Workey API
+// @version 1.0
+// @description This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/fazilnbr/Job_Portal_Project
+
+// @contact.name API Support
+// @contact.url https://fazilnbr.github.io/mypeosolal.web.portfolio/
+// @contact.email fazilkp2000@gmail.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @host localhost:5050
+// @BasePath
+// @query.collection.format multi
+
+// @Summary user signin
+// @ID user signin
+// @Tags User Authentication
+// @Param userLogin body domain.User{} true "user Login"
+// @Produce json
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/login [post]
 func (uh *UserAuthHandler) UserSignin(c *gin.Context) {
 	var userLogin domain.User
 	if err := c.Bind(&userLogin); err != nil {
@@ -60,6 +87,14 @@ func (uh *UserAuthHandler) UserSignin(c *gin.Context) {
 		c.Writer.WriteHeader(http.StatusOK)
 	}
 }
+
+// @Summary admin signin
+// @ID admin signin
+// @Tags admin Authentication
+// @Produce json
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /admin/registration/login [post]
 func (ah *AdminAuthHandler) AdminSignin(c *gin.Context) {
 	var adminLogin domain.User
 	if err := c.Bind(&adminLogin); err != nil {

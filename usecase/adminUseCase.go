@@ -192,7 +192,7 @@ func (au *adminUseCase) DeleteBrand(brand domain.Brand) error {
 // Product Management
 
 func (au *adminUseCase) AddProducts(newProduct domain.Products) error {
-
+	newProduct.Status="available"
 	err := au.adminRepo.AddProducts(newProduct)
 	if err != nil {
 		return err

@@ -22,6 +22,8 @@ type UserUseCase interface {
 	AddShippingDetails(user_id int, newAddress domain.ShippingDetails) error
 	ListShippingDetails(user_id int) ([]domain.ShippingDetailsResponse, error)
 	DeleteShippingDetails(user_id, address_id int) error
+	//order
+	PlaceOrder(user_id, product_id, address_id, coupon_id int) error
 }
 type UserAuth interface {
 	VerifyUser(c *gin.Context, email string, password, userRole string) (bool, error)

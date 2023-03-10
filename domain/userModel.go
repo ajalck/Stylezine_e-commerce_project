@@ -46,6 +46,7 @@ type Order struct {
 	User_ID         uint    `json:"user_id" gorm:"not null"`
 	Product_ID      uint    `json:"product_id" gorm:"not null"`
 	Shipping_ID     uint    `json:"shipping_id" gorm:"not null"`
+	Coupon_ID       uint    `json:"coupon_id"`
 	Quantity        int     `json:"quantity" gorm:"not null"`
 	GST             int     `json:"gst"`
 	Discount        float32 `json:"discount"`

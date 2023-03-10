@@ -137,3 +137,21 @@ func (uc *userUseCase) DeleteShippingDetails(user_id, address_id int) error {
 	}
 	return nil
 }
+
+// Order
+func (uc *userUseCase) PlaceOrder(user_id, product_id, address_id, coupon_id int) error {
+	if product_id == 0 {
+		return errors.New("Please select a product")
+	}
+	if address_id == 0 {
+		gin.Default().GET("/user/order/place", func(c *gin.Context) {
+			c.Request.URL.Path = "/user/shipping/adddetails"
+			gin.Default().HandleContext(c)
+		})
+	}
+	err := uc.userRepo.PlaceOrder(user_id, product_id, address_id, coupon_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
