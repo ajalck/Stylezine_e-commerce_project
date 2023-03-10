@@ -5,6 +5,7 @@ import (
 	repoInt "ajalck/e_commerce/repository/interface"
 	"ajalck/e_commerce/utils"
 	"errors"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -214,4 +215,58 @@ func (ar *AdminRepo) DeleteProducts(product domain.Products) error {
 		return err
 	}
 	return nil
+}
+func (ar *AdminRepo) AddCoupon(coupon domain.Coupon) error {
+	if result := ar.DB.Where(&domain.Coupon{Coupon_Code: coupon.Coupon_Code, Coupon_Status: "active"}).First(&domain.Coupon{}); result.Error == nil {
+		return errors.New("Coupon already exists")
+	}
+	expiresAt := coupon.Expires_At
+	duration := time.Until(expiresAt)
+	if duration < 0 {
+		coupon.Coupon_Status = "expired"
+	} else {
+		coupon.Coupon_Status = "active"
+	}
+	result := ar.DB.Create(&domain.Coupon{
+		Coupon_Code:     coupon.Coupon_Code,
+		Discount_amount: coupon.Discount_amount,
+		User_ID:         coupon.User_ID,
+		Product_ID:      coupon.Product_ID,
+		Min_Cost:        coupon.Min_Cost,
+		Expires_At:      coupon.Expires_At,
+		Coupon_Status:   coupon.Coupon_Status,
+	})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+
+}
+func (ar *AdminRepo) ListCoupon(page, perPage int) ([]domain.CouponResponse, utils.MetaData, error) {
+	var coupons []domain.CouponResponse
+	var totalRecords int64
+	coupon := domain.Coupon{}
+	ar.DB.Where("coupon_status", "active").Find(&coupon).Count(&totalRecords)
+	metaData, offset, err := utils.ComputeMetaData(page, perPage, int(totalRecords))
+	if err != nil {
+		return coupons, metaData, err
+	}
+	results := ar.DB.Model(&coupon).Select("id", "coupon_code", "discount_amount", "user_id", "product_id", "min_cost", "expires_at", "coupon_status").Where("coupon_status", "active").Offset(offset).Limit(page).Find(&coupons)
+	if results.Error != nil {
+		return coupons, metaData, results.Error
+	}
+	return coupons, metaData, nil
+}
+func (ar *AdminRepo) DeleteCoupon(coupon_id int) error {
+	coupon := &domain.Coupon{}
+	result := ar.DB.Where("id", coupon_id).First(&coupon)
+	if result.Error == nil {
+		result := ar.DB.Where("id", coupon_id).Unscoped().Delete(&coupon)
+		if result.Error != nil {
+			return result.Error
+		}
+		return nil
+	} else {
+		return result.Error
+	}
 }

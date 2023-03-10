@@ -40,9 +40,13 @@ func UserServer(routes *gin.Engine,
 				shipping.GET("/listdetails", userHandler.ListShippingDetails)
 				shipping.DELETE("/deletedetails/:addressid", userHandler.DeleteShippingDetails)
 			}
-			order:=user.Group("/order")
+			order := user.Group("/order")
 			{
+<<<<<<< HEAD
 				order.POST("/place/:productid/:shippingid/:couponid",userHandler.PlaceOrder)
+=======
+				order.POST("/place/:productid/:shippingid", userHandler.PlaceOrder)
+>>>>>>> 1df3e9a651c7205727c237e280b2685ffd593ddb
 			}
 		}
 	}
@@ -88,6 +92,12 @@ func AdminServer(routes *gin.Engine,
 			products.POST("/add", adminHandler.AddProducts)
 			products.PATCH("/edit", adminHandler.EditProducts)
 			products.DELETE("/delete", adminHandler.DeleteProducts)
+		}
+		coupon := admin.Group("/coupon")
+		{
+			coupon.POST("/add", adminHandler.AddCoupon)
+			coupon.GET("/list/:page/:records", adminHandler.ListCoupon)
+			coupon.DELETE("/delete/:couponid", adminHandler.DeleteCoupon)
 		}
 	}
 

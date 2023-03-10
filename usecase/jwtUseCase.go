@@ -47,7 +47,6 @@ func (j *jwtService) VerifyToken(SignedToken string) (bool, *domain.SignedDetail
 			return true, claims
 		}
 	}
-	_ = &domain.User{Verification: true}
 	return false, claims
 }
 func (j *jwtService) GetTokenFromString(signedToken string, claims *domain.SignedDetails) (*jwt.Token, error) {

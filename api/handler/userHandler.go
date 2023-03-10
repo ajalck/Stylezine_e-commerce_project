@@ -215,6 +215,7 @@ func (uh *UserHandler) DeleteShippingDetails(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) PlaceOrder(c *gin.Context) {
+<<<<<<< HEAD
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 	address_id, _ := strconv.Atoi(c.Query("address_id"))
@@ -230,5 +231,10 @@ func (uh *UserHandler) PlaceOrder(c *gin.Context) {
 	response := utils.SuccessResponse("Order placed successfully", nil)
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
+=======
+	// user_id,_:=strconv.Atoi(c.Writer.Header().Get("id"))
+	// product_id,_:=strconv.Atoi(c.Query("product_id"))
+	// address_id,_:=strconv.Atoi(c.Query("address_id"))
+>>>>>>> 1df3e9a651c7205727c237e280b2685ffd593ddb
 
 }

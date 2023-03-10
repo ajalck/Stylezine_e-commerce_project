@@ -80,10 +80,9 @@ func (uh *UserAuthHandler) UserSignin(c *gin.Context) {
 		signedToken := uh.jwtService.GenerateToken(int(user.ID), user.Email, "user")
 
 		user.Password = ""
-		user.Token = signedToken
 
 		c.Writer.Header().Set("Content-Type", "application/json")
-		c.Writer.Header().Set("Token", user.Token)
+		c.Writer.Header().Set("Token", signedToken)
 		c.Writer.WriteHeader(http.StatusOK)
 	}
 }

@@ -38,7 +38,7 @@ func (uc *userUseCase) CreateUser(c *gin.Context, newUser domain.User) error {
 
 	newUser.Password = HashPassword(newUser.Password)
 	newUser.Status = "active"
-	newUser.Verification = false
+	newUser.Level = "bronze"
 	err := uc.userRepo.CreateUser(c, newUser)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "couldn't create a user"})

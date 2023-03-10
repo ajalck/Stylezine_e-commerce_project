@@ -1,6 +1,10 @@
 package domain
 
-import "github.com/golang-jwt/jwt/v4"
+import (
+	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+)
 
 type UserResponse struct {
 	ID           int    `json:"id"`
@@ -66,4 +70,15 @@ type ShippingDetailsResponse struct {
 	Address   string `json:"address"`
 	Pin_code  string `json:"pin_code"`
 	Land_Mark string `json:"land_mark"`
+}
+
+type CouponResponse struct {
+	ID              uint      `json:"coupon_id"`
+	Coupon_Code     string    `json:"coupon_code"`
+	Discount_amount float32   `json:"discount_amount"`
+	User_ID         uint      `json:"user_id"`
+	Product_ID      uint      `json:"product_id"`
+	Min_Cost        float32   `json:"min_cost"`
+	Expires_At      time.Time `json:"expires_at"`
+	Coupon_Status   string    `json:"coupon_status"`
 }

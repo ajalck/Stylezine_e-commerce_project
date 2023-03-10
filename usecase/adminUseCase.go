@@ -218,3 +218,29 @@ func (au *adminUseCase) DeleteProducts(product domain.Products) error {
 
 	return nil
 }
+
+//Coupon
+
+func (au *adminUseCase) AddCoupon(coupon domain.Coupon) error {
+	err := au.adminRepo.AddCoupon(coupon)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (au *adminUseCase) ListCoupon(page, perPage int) ([]domain.CouponResponse, utils.MetaData, error) {
+	coupons, metaData, err := au.adminRepo.ListCoupon(page, perPage)
+	if err != nil {
+		return coupons, metaData, err
+	}
+	return coupons, metaData, nil
+}
+func (au *adminUseCase) DeleteCoupon(coupon_id int) error {
+	err := au.adminRepo.DeleteCoupon(coupon_id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
