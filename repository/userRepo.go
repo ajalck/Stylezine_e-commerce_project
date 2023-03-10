@@ -66,7 +66,7 @@ func (ur *UserRepo) ListProducts(page, perPage int) ([]domain.ProductResponse, u
 }
 func (ur *UserRepo) ViewProduct(id int) (domain.ProductResponse, error) {
 
-	result := ur.DB.Model(&domain.Products{}).Where("id", id).First(&domain.Products{})
+	result := ur.DB.Model(&domain.Products{}).Where("id", id).Where("status", "available").First(&domain.Products{})
 	if is := errors.Is(result.Error, gorm.ErrRecordNotFound); is == true {
 		fmt.Println("error is ", result.Error.Error())
 		return domain.ProductResponse{}, result.Error
@@ -253,4 +253,15 @@ func (ur *UserRepo) DeleteShippingDetails(user_id, address_id int) error {
 		return result.Error
 	}
 	return nil
+}
+func (ur *UserRepo) PlaceOrder(user_id, product_id, address_id, coupon_id int) error {
+	product, err := ur.ViewProduct(product_id)
+	if err != nil {
+		return err
+	}
+	result := ur.DB.Where("id", address_id).Find(&domain.ShippingDetails{})
+	if result.Error != nil {
+		return result.Error
+	}
+	result=ur.DB.Where("id")
 }

@@ -194,8 +194,8 @@ func (ar *AdminRepo) DeleteBrand(brand domain.Brand) error {
 
 func (ar *AdminRepo) AddProducts(products domain.Products) error {
 
-	if err := ar.DB.Raw("INSERT INTO products (item,product_name,discription,product_image,category_id,brand_id,size,color,unit_price,stock) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)RETURNING id ;",
-		products.Item, products.Product_Name, products.Discription, products.Product_Image, products.Category_id, products.Brand_id, products.Size, products.Color, products.Unit_Price, products.Stock).Scan(&products).Error; err != nil {
+	if err := ar.DB.Raw("INSERT INTO products (item,product_name,discription,product_image,category_id,brand_id,size,color,unit_price,stock,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)RETURNING id ;",
+		products.Item, products.Product_Name, products.Discription, products.Product_Image, products.Category_id, products.Brand_id, products.Size, products.Color, products.Unit_Price, products.Stock, products.Status).Scan(&products).Error; err != nil {
 		return err
 	}
 	return nil

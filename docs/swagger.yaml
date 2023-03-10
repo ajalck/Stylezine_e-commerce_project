@@ -1,0 +1,109 @@
+definitions:
+  domain.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      status:
+        type: string
+      token:
+        type: string
+      updatedAt:
+        type: string
+      user_role:
+        type: string
+      verification:
+        type: boolean
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  utils.Response:
+    properties:
+      data: {}
+      errors: {}
+      message:
+        type: string
+      status:
+        type: boolean
+    type: object
+info:
+  contact:
+    email: fazilkp2000@gmail.com
+    name: API Support
+    url: https://fazilnbr.github.io/mypeosolal.web.portfolio/
+  description: This is a sample server Job Portal server. You can visit the GitHub
+    repository at https://github.com/fazilnbr/Job_Portal_Project
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Go + Gin Workey API
+  version: "1.0"
+paths:
+  /admin/registration/login:
+    post:
+      operationId: admin signin
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: admin signin
+      tags:
+      - admin Authentication
+  /user/login:
+    post:
+      operationId: user signin
+      parameters:
+      - description: user Login
+        in: body
+        name: userLogin
+        required: true
+        schema:
+          $ref: '#/definitions/domain.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: user signin
+      tags:
+      - User Authentication
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

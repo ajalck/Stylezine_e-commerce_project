@@ -42,7 +42,11 @@ func UserServer(routes *gin.Engine,
 			}
 			order := user.Group("/order")
 			{
+<<<<<<< HEAD
+				order.POST("/place/:productid/:shippingid/:couponid",userHandler.PlaceOrder)
+=======
 				order.POST("/place/:productid/:shippingid", userHandler.PlaceOrder)
+>>>>>>> 1df3e9a651c7205727c237e280b2685ffd593ddb
 			}
 		}
 	}
