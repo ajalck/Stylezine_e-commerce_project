@@ -23,7 +23,8 @@ type Cart struct {
 	Cart_ID     uint    `json:"cart_id" gorm:"primarykey;unique;AUTO_INCREMENT"`
 	User_ID     int     `json:"user_id"`
 	Product_ID  int     `json:"product_id"`
-	Count       int     `json:"count"`
+	Coupon_id   int     `json:"coupon_id"`
+	Quantity    int     `json:"quantity"`
 	Total_Price float32 `json:"total_price"`
 }
 type ShippingDetails struct {
@@ -47,7 +48,6 @@ type Order struct {
 	Shipping_ID     uint    `json:"shipping_id" gorm:"not null"`
 	Coupon_ID       uint    `json:"coupon_id"`
 	Quantity        int     `json:"quantity" gorm:"not null"`
-	GST             int     `json:"gst"`
 	Discount        float32 `json:"discount"`
 	TotalPrice      float32 `json:"totalprice"`
 	Mode_of_Payment string  `json:"mode_of_payment"`

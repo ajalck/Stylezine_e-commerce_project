@@ -32,6 +32,8 @@ func UserServer(routes *gin.Engine,
 			{
 				cart.POST("/add/:productid", userHandler.AddCart)
 				cart.GET("/view/:page/:records", userHandler.ViewCart)
+				cart.GET("/listcoupon/:productid",userHandler.ListCoupon)
+				cart.POST("/applycoupon/:productid/:couponid",userHandler.ApplyCoupon)
 				cart.DELETE("/remove/:productid", userHandler.DeleteCart)
 			}
 			shipping := user.Group("/shipping")
@@ -42,11 +44,7 @@ func UserServer(routes *gin.Engine,
 			}
 			order := user.Group("/order")
 			{
-<<<<<<< HEAD
 				order.POST("/place/:productid/:shippingid/:couponid",userHandler.PlaceOrder)
-=======
-				order.POST("/place/:productid/:shippingid", userHandler.PlaceOrder)
->>>>>>> 1df3e9a651c7205727c237e280b2685ffd593ddb
 			}
 		}
 	}

@@ -6,6 +6,7 @@ import (
 	"ajalck/e_commerce/utils"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -140,18 +141,18 @@ func (ur *UserRepo) AddCart(user_id, product_id int) error {
 	cart := &domain.Cart{
 		User_ID:     user_id,
 		Product_ID:  product_id,
-		Count:       1,
+		Coupon_id:   0,
+		Quantity:    1,
 		Total_Price: unit_price,
 	}
 	Cart, err := ur.CheckExistency(user_id, product_id)
 	if err == nil {
-		Cart.Count = Cart.Count + 1
-		Cart.Total_Price = float32(Cart.Count) * unit_price
-		ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Count: Cart.Count, Total_Price: Cart.Total_Price})
+		Cart.Quantity = Cart.Quantity + 1
+		Cart.Total_Price = float32(Cart.Quantity) * unit_price
+		ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Quantity: Cart.Quantity, Total_Price: Cart.Total_Price})
 		return nil
 	}
-
-	result := ur.DB.Select("user_id", "product_id", "count", "total_price").Create(&cart)
+	result := ur.DB.Select("user_id", "product_id", "coupon_id", "count", "total_price").Create(&cart)
 	if is := errors.Is(result.Error, gorm.ErrRegistered); is == true {
 		return result.Error
 	}
@@ -185,16 +186,66 @@ func (ur *UserRepo) ViewCart(user_id, page, perPage int) ([]domain.CartResponse,
 	fmt.Println(cart)
 	return cart, metaData, nil
 }
+func (ur *UserRepo) UpdateCoupon() error {
+	coupons := []domain.Coupon{}
+	ur.DB.Find(&coupons)
+	for i := range coupons {
+		if coupons[i].Expires_At.Compare(time.Now()) == -1 {
+			result := ur.DB.Table("coupons").Where("id", coupons[i].ID).Update("coupon_status", "expired")
+			if result.Error != nil {
+				return result.Error
+			}
+		}
+	}
+	return nil
+}
+func (ur *UserRepo) ListCoupon(user_id, product_id int) ([]domain.CouponResponse, error) {
+	coupons := []domain.CouponResponse{}
+	err := ur.UpdateCoupon()
+	if err != nil {
+		return coupons, err
+	}
+	result := ur.DB.Raw("SELECT id,coupon_code,discount_amount,user_id,product_id,min_cost,expires_at,coupon_status FROM coupons WHERE user_id IN ($1,0) AND product_id IN ($2,0) AND coupon_status=$3;", user_id, product_id, "active").Scan(&coupons)
+	if result.Error != nil {
+		return coupons, result.Error
+	}
+	return coupons, nil
+}
+func (ur *UserRepo) ValidateCoupon(user_id, product_id, coupon_id int) bool {
+	user := domain.User{}
+	ur.DB.Where("id", user_id).First(&user)
+	product := domain.Products{}
+	ur.DB.Where("id", product_id).First(&product)
+	coupon := domain.Coupon{}
+	ur.DB.Where("id", coupon_id).First(&coupon)
+	if coupon.Coupon_Code == "WELCOME200" {
+		if user.Level == "bronze" {
+			return true
+		}
+		return false
+	} else {
+		orders := []domain.Order{}
+		result := ur.DB.Where("user_id", user_id).Find(&orders)
+		if result.Error != nil {
+			for i := range orders {
+				if orders[i].Coupon_ID == uint(coupon_id) {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}
 
 func (ur *UserRepo) DeleteCart(user_id, product_id int) error {
 	cart := &domain.Cart{}
 	Cart, err := ur.CheckExistency(user_id, product_id)
 	if err == nil {
-		unit_price := (Cart.Total_Price / float32(Cart.Count))
-		if Cart.Count > 1 {
-			Cart.Count = Cart.Count - 1
-			Cart.Total_Price = unit_price * float32(Cart.Count)
-			ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Count: Cart.Count, Total_Price: Cart.Total_Price})
+		unit_price := (Cart.Total_Price / float32(Cart.Quantity))
+		if Cart.Quantity > 1 {
+			Cart.Quantity = Cart.Quantity - 1
+			Cart.Total_Price = unit_price * float32(Cart.Quantity)
+			ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Quantity: Cart.Quantity, Total_Price: Cart.Total_Price})
 			return nil
 		}
 		result := ur.DB.Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Delete(&cart)
@@ -255,13 +306,25 @@ func (ur *UserRepo) DeleteShippingDetails(user_id, address_id int) error {
 	return nil
 }
 func (ur *UserRepo) PlaceOrder(user_id, product_id, address_id, coupon_id int) error {
-	product, err := ur.ViewProduct(product_id)
+	_, err := ur.ViewProduct(product_id)
 	if err != nil {
 		return err
 	}
-	result := ur.DB.Where("id", address_id).Find(&domain.ShippingDetails{})
+	result := ur.DB.Where("id", address_id).First(&domain.ShippingDetails{})
 	if result.Error != nil {
 		return result.Error
 	}
-	result=ur.DB.Where("id")
+	coupon := &domain.Coupon{}
+	result = ur.DB.Where("id", coupon_id).First(&coupon)
+	if result.Error != nil {
+		fmt.Println("coupon not found")
+	}
+	result = ur.DB.Create(&domain.Order{
+		User_ID:     uint(user_id),
+		Product_ID:  uint(product_id),
+		Shipping_ID: uint(address_id),
+		Coupon_ID:   uint(coupon_id),
+		Quantity:    1,
+	})
+	return nil
 }

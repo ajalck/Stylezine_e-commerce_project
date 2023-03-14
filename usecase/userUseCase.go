@@ -106,6 +106,13 @@ func (uc *userUseCase) ViewCart(user_id, page, perPage int) ([]domain.CartRespon
 	}
 	return carts, metaData, nil
 }
+func (uc *userUseCase) ListCoupon(user_id, product_id int) ([]domain.CouponResponse, error) {
+	coupons,err:=uc.userRepo.ListCoupon(user_id,product_id)
+	if err != nil {
+		return coupons,err
+	}
+	return coupons,nil
+}
 func (uc *userUseCase) DeleteCart(user_id, product_id int) error {
 	err := uc.userRepo.DeleteCart(user_id, product_id)
 	if err != nil {
@@ -148,6 +155,9 @@ func (uc *userUseCase) PlaceOrder(user_id, product_id, address_id, coupon_id int
 			c.Request.URL.Path = "/user/shipping/adddetails"
 			gin.Default().HandleContext(c)
 		})
+	}
+	if coupon_id == 0 {
+		fmt.Println("coupon not selected")
 	}
 	err := uc.userRepo.PlaceOrder(user_id, product_id, address_id, coupon_id)
 	if err != nil {

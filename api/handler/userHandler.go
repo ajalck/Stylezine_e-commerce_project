@@ -149,6 +149,24 @@ func (uh *UserHandler) ViewCart(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 	c.JSON(200, results.MetaData)
 }
+func (uh *UserHandler)ListCoupon(c *gin.Context){
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
+	product_id, _ := strconv.Atoi(c.Query("product_id"))
+
+	coupons,err:=uh.userUseCase.ListCoupon(user_id,product_id)
+	if err!=nil{
+		response := utils.ErrorResponse("No coupons found !", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("here is the coupons", coupons)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
+func (uh *UserHandler)ApplyCoupon(c *gin.Context){
+
+}
 func (uh *UserHandler) DeleteCart(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
@@ -215,13 +233,12 @@ func (uh *UserHandler) DeleteShippingDetails(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) PlaceOrder(c *gin.Context) {
-<<<<<<< HEAD
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 	address_id, _ := strconv.Atoi(c.Query("address_id"))
 	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
 
-	err := uh.userUseCase.PlaceOrder(c,user_id, product_id, address_id, coupon_id)
+	err := uh.userUseCase.PlaceOrder(user_id, product_id, address_id, coupon_id)
 	if err != nil {
 		response := utils.ErrorResponse("Order placement failed !", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusNotFound)
@@ -231,10 +248,5 @@ func (uh *UserHandler) PlaceOrder(c *gin.Context) {
 	response := utils.SuccessResponse("Order placed successfully", nil)
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
-=======
-	// user_id,_:=strconv.Atoi(c.Writer.Header().Get("id"))
-	// product_id,_:=strconv.Atoi(c.Query("product_id"))
-	// address_id,_:=strconv.Atoi(c.Query("address_id"))
->>>>>>> 1df3e9a651c7205727c237e280b2685ffd593ddb
 
 }
