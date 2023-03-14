@@ -65,8 +65,8 @@ func (ur *UserRepo) ListProducts(page, perPage int) ([]domain.ProductResponse, u
 	}
 	return Products, metaData, nil
 }
-func (ur *UserRepo) ViewProduct(id int) (domain.ProductResponse, error) {
-	product := domain.ProductResponse{}
+func (ur *UserRepo) ViewProduct(id int) (domain.Products, error) {
+	product := domain.Products{}
 	result := ur.DB.Model(&domain.Products{}).Where("id", id).Where("status", "available").First(&product)
 	if is := errors.Is(result.Error, gorm.ErrRecordNotFound); is == true {
 		fmt.Println("error is ", result.Error.Error())
@@ -137,7 +137,6 @@ func (ur *UserRepo) AddCart(user_id, product_id int) error {
 
 	ur.DB.Table("products").Select("unit_price").Where("id", product_id).First(&product)
 	unit_price := product.Unit_Price
-	// coupon_id,_ := ur.ApplyCoupon()
 	cart := &domain.Cart{
 		User_ID:     user_id,
 		Product_ID:  product_id,
@@ -152,7 +151,7 @@ func (ur *UserRepo) AddCart(user_id, product_id int) error {
 		ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Quantity: Cart.Quantity, Total_Price: Cart.Total_Price})
 		return nil
 	}
-	result := ur.DB.Select("user_id", "product_id", "coupon_id", "count", "total_price").Create(&cart)
+	result := ur.DB.Select("user_id", "product_id", "coupon_id", "quantity", "total_price").Create(&cart)
 	if is := errors.Is(result.Error, gorm.ErrRegistered); is == true {
 		return result.Error
 	}

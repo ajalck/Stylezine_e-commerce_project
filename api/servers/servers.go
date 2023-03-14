@@ -49,7 +49,7 @@ func UserServer(routes *gin.Engine,
 			}
 			order := user.Group("/order")
 			{
-				order.POST("/checkout/:cartid/:productid/:shippingid/:couponid", userHandler.CheckOut)
+				order.POST("/checkout/:cartid/:productid/:shippingid", userHandler.CheckOut)
 			}
 		}
 	}

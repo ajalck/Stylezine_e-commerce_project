@@ -265,14 +265,14 @@ func (uh *UserHandler) CheckOut(c *gin.Context) {
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 	address_id, _ := strconv.Atoi(c.Query("address_id"))
 
-	err := uh.userUseCase.CheckOut(user_id,cart_id, product_id, address_id)
+	err := uh.userUseCase.CheckOut(user_id, cart_id, product_id, address_id)
 	if err != nil {
-		response := utils.ErrorResponse("Order placement failed !", err.Error(), nil)
+		response := utils.ErrorResponse("Failed to add to checkout !", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusNotFound)
 		utils.ResponseJSON(c, response)
 		return
 	}
-	response := utils.SuccessResponse("Order placed successfully", nil)
+	response := utils.SuccessResponse("Added to checkout", nil)
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
 

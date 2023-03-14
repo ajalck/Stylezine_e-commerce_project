@@ -12,7 +12,7 @@ type UserRepository interface {
 	FindUser(c *gin.Context, email string, userRole string) (domain.User, error)
 
 	ListProducts(page, perPage int) ([]domain.ProductResponse, utils.MetaData, error)
-	ViewProduct(id int) (domain.ProductResponse, error)
+	ViewProduct(id int) (domain.Products, error)
 	//Wishlist
 	AddWishlist(user_id, product_id int) error
 	ViewWishList(user_id, page, perPage int) ([]domain.WishListResponse, utils.MetaData, error)
@@ -30,5 +30,5 @@ type UserRepository interface {
 	ListShippingDetails(user_id int) ([]domain.ShippingDetailsResponse, error)
 	DeleteShippingDetails(user_id, address_id int) error
 	//Order
-	CheckOut(user_id,cart_id, product_id, address_id int) error
+	CheckOut(user_id, cart_id, product_id, address_id int) error
 }

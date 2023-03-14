@@ -165,13 +165,13 @@ func (uc *userUseCase) DeleteShippingDetails(user_id, address_id int) error {
 
 // Order
 func (uc *userUseCase) CheckOut(user_id, cart_id, product_id, address_id int) error {
-	if product_id == 0 {
+	if product_id == 0 && cart_id == 0 {
 		return errors.New("Please select a product")
 	}
 	if address_id == 0 {
 		return errors.New("Please enter the shipping details")
 	}
-	err := uc.userRepo.CheckOut(user_id,cart_id, product_id, address_id)
+	err := uc.userRepo.CheckOut(user_id, cart_id, product_id, address_id)
 	if err != nil {
 		return err
 	}
