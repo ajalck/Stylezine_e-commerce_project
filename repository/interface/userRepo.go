@@ -30,5 +30,5 @@ type UserRepository interface {
 	ListShippingDetails(user_id int) ([]domain.ShippingDetailsResponse, error)
 	DeleteShippingDetails(user_id, address_id int) error
 	//Order
-	PlaceOrder(user_id, product_id, address_id, coupon_id int) error
+	CheckOut(user_id,cart_id, product_id, address_id int) error
 }

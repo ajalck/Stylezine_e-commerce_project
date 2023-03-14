@@ -259,13 +259,13 @@ func (uh *UserHandler) DeleteShippingDetails(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
 }
-func (uh *UserHandler) PlaceOrder(c *gin.Context) {
+func (uh *UserHandler) CheckOut(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
+	cart_id, _ := strconv.Atoi(c.Query("cart_id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 	address_id, _ := strconv.Atoi(c.Query("address_id"))
-	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
 
-	err := uh.userUseCase.PlaceOrder(user_id, product_id, address_id, coupon_id)
+	err := uh.userUseCase.CheckOut(user_id,cart_id, product_id, address_id)
 	if err != nil {
 		response := utils.ErrorResponse("Order placement failed !", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusNotFound)

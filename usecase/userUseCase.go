@@ -164,22 +164,14 @@ func (uc *userUseCase) DeleteShippingDetails(user_id, address_id int) error {
 }
 
 // Order
-func (uc *userUseCase) PlaceOrder(user_id, product_id, address_id, coupon_id int) error {
-	fmt.Println(user_id, product_id, address_id, coupon_id)
+func (uc *userUseCase) CheckOut(user_id, cart_id, product_id, address_id int) error {
 	if product_id == 0 {
 		return errors.New("Please select a product")
 	}
 	if address_id == 0 {
 		return errors.New("Please enter the shipping details")
-		// gin.Default().GET("/user/order/place", func(c *gin.Context) {
-		// 	c.Request.URL.Path = "/user/shipping/adddetails"
-		// 	gin.Default().HandleContext(c)
-		// })
 	}
-	if coupon_id == 0 {
-		fmt.Println("coupon not selected")
-	}
-	err := uc.userRepo.PlaceOrder(user_id, product_id, address_id, coupon_id)
+	err := uc.userRepo.CheckOut(user_id,cart_id, product_id, address_id)
 	if err != nil {
 		return err
 	}

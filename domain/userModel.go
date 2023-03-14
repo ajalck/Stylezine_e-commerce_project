@@ -47,9 +47,13 @@ type Order struct {
 	Product_ID      uint    `json:"product_id" gorm:"not null"`
 	Shipping_ID     uint    `json:"shipping_id" gorm:"not null"`
 	Coupon_ID       uint    `json:"coupon_id"`
+	Order_ID        uint    `json:"order_id"`
+	Payment_ID      uint    `json:"payment_id"`
 	Quantity        int     `json:"quantity" gorm:"not null"`
 	Discount        float32 `json:"discount"`
 	TotalPrice      float32 `json:"totalprice"`
+	Grand_Total     float32 `json:"grand_total"`
 	Mode_of_Payment string  `json:"mode_of_payment"`
 	Order_Status    string  `json:"order_status"`
+	Payment_Status  string  `json:"payment_status"`
 }

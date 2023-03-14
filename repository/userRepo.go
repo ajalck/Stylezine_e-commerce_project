@@ -66,14 +66,13 @@ func (ur *UserRepo) ListProducts(page, perPage int) ([]domain.ProductResponse, u
 	return Products, metaData, nil
 }
 func (ur *UserRepo) ViewProduct(id int) (domain.ProductResponse, error) {
-
-	result := ur.DB.Model(&domain.Products{}).Where("id", id).Where("status", "available").First(&domain.Products{})
+	product := domain.ProductResponse{}
+	result := ur.DB.Model(&domain.Products{}).Where("id", id).Where("status", "available").First(&product)
 	if is := errors.Is(result.Error, gorm.ErrRecordNotFound); is == true {
 		fmt.Println("error is ", result.Error.Error())
-		return domain.ProductResponse{}, result.Error
+		return product, result.Error
 	}
-	fmt.Println(domain.ProductResponse{})
-	return domain.ProductResponse{}, nil
+	return product, nil
 }
 
 //Wish List
@@ -386,26 +385,61 @@ func (ur *UserRepo) DeleteShippingDetails(user_id, address_id int) error {
 	}
 	return nil
 }
-func (ur *UserRepo) PlaceOrder(user_id, product_id, address_id, coupon_id int) error {
-	_, err := ur.ViewProduct(product_id)
-	if err != nil {
-		return err
-	}
+func (ur *UserRepo) CheckOut(user_id, cart_id, product_id, address_id int) error {
 	result := ur.DB.Where("id", address_id).First(&domain.ShippingDetails{})
 	if result.Error != nil {
 		return result.Error
 	}
-	coupon := &domain.Coupon{}
-	result = ur.DB.Where("id", coupon_id).First(&coupon)
-	if result.Error != nil {
-		fmt.Println("coupon not found")
+	if cart_id != 0 {
+		cart := []domain.Cart{}
+		result := ur.DB.Where("cart_id", cart_id).First(&cart)
+		if result.Error != nil {
+			return result.Error
+		}
+		for i := range cart {
+			coupon := &domain.Coupon{}
+			if cart[i].Coupon_id != 0 {
+				result := ur.DB.Where("id", cart[i].Coupon_id).First(&coupon)
+				if result.Error != nil {
+					fmt.Errorf("Coupon not valid")
+				}
+			}
+			result = ur.DB.Create(&domain.Order{
+				User_ID:        uint(cart[i].User_ID),
+				Product_ID:     uint(cart[i].Product_ID),
+				Shipping_ID:    uint(address_id),
+				Coupon_ID:      uint(cart[i].Coupon_id),
+				Quantity:       cart[i].Quantity,
+				Discount:       coupon.Discount_amount,
+				TotalPrice:     cart[i].Total_Price - coupon.Discount_amount,
+				Order_Status:   "pending",
+				Payment_Status: "pending",
+			})
+			if result.Error != nil {
+				return result.Error
+			}
+
+		}
+		return nil
+	} else {
+		product, err := ur.ViewProduct(product_id)
+		if err != nil {
+			return err
+		}
+		result = ur.DB.Create(&domain.Order{
+			User_ID:        uint(user_id),
+			Product_ID:     uint(product_id),
+			Shipping_ID:    uint(address_id),
+			Coupon_ID:      0,
+			Quantity:       1,
+			Discount:       0,
+			TotalPrice:     product.Unit_Price,
+			Order_Status:   "pending",
+			Payment_Status: "pending",
+		})
+		if result.Error != nil {
+			return result.Error
+		}
+		return nil
 	}
-	result = ur.DB.Create(&domain.Order{
-		User_ID:     uint(user_id),
-		Product_ID:  uint(product_id),
-		Shipping_ID: uint(address_id),
-		Coupon_ID:   uint(coupon_id),
-		Quantity:    1,
-	})
-	return nil
 }
