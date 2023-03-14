@@ -149,12 +149,12 @@ func (uh *UserHandler) ViewCart(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 	c.JSON(200, results.MetaData)
 }
-func (uh *UserHandler)ListCoupon(c *gin.Context){
+func (uh *UserHandler) ListCoupon(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 
-	coupons,err:=uh.userUseCase.ListCoupon(user_id,product_id)
-	if err!=nil{
+	coupons, err := uh.userUseCase.ListCoupon(user_id, product_id)
+	if err != nil {
 		response := utils.ErrorResponse("No coupons found !", err.Error(), nil)
 		c.Writer.WriteHeader(400)
 		utils.ResponseJSON(c, response)
@@ -164,8 +164,35 @@ func (uh *UserHandler)ListCoupon(c *gin.Context){
 	c.Writer.WriteHeader(200)
 	utils.ResponseJSON(c, response)
 }
-func (uh *UserHandler)ApplyCoupon(c *gin.Context){
-
+func (uh *UserHandler) ApplyCoupon(c *gin.Context) {
+	cart_id, _ := strconv.Atoi(c.Query("cart_id"))
+	order_id, _ := strconv.Atoi(c.Query("order_id"))
+	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
+	err := uh.userUseCase.ApplyCoupon(cart_id, order_id, coupon_id)
+	if err != nil {
+		response := utils.ErrorResponse("Coupon couldn't applied !", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("Coupon applied successfully", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
+func (uh *UserHandler) CancelCoupon(c *gin.Context) {
+	cart_id, _ := strconv.Atoi(c.Query("cart_id"))
+	order_id, _ := strconv.Atoi(c.Query("order_id"))
+	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
+	err := uh.userUseCase.CancelCoupon(cart_id, order_id, coupon_id)
+	if err != nil {
+		response := utils.ErrorResponse("Coupon couldn't cancelled !", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("Coupon cancelled successfully", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) DeleteCart(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))

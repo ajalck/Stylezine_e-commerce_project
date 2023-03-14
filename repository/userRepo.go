@@ -138,6 +138,7 @@ func (ur *UserRepo) AddCart(user_id, product_id int) error {
 
 	ur.DB.Table("products").Select("unit_price").Where("id", product_id).First(&product)
 	unit_price := product.Unit_Price
+	// coupon_id,_ := ur.ApplyCoupon()
 	cart := &domain.Cart{
 		User_ID:     user_id,
 		Product_ID:  product_id,
@@ -211,32 +212,112 @@ func (ur *UserRepo) ListCoupon(user_id, product_id int) ([]domain.CouponResponse
 	}
 	return coupons, nil
 }
-func (ur *UserRepo) ValidateCoupon(user_id, product_id, coupon_id int) bool {
+func (ur *UserRepo) ValidateCoupon(user_id, product_id, coupon_id int) (bool, error) {
 	user := domain.User{}
 	ur.DB.Where("id", user_id).First(&user)
 	product := domain.Products{}
 	ur.DB.Where("id", product_id).First(&product)
 	coupon := domain.Coupon{}
-	ur.DB.Where("id", coupon_id).First(&coupon)
+	err := ur.DB.Where("id", coupon_id).First(&coupon)
+	if err.Error != nil {
+		return false, errors.New("Coupon does not exists !")
+	}
 	if coupon.Coupon_Code == "WELCOME200" {
 		if user.Level == "bronze" {
-			return true
+			return true, nil
 		}
-		return false
+		return false, errors.New("Coupon alredy used")
 	} else {
 		orders := []domain.Order{}
 		result := ur.DB.Where("user_id", user_id).Find(&orders)
 		if result.Error != nil {
 			for i := range orders {
 				if orders[i].Coupon_ID == uint(coupon_id) {
-					return false
+					return false, errors.New("Coupon alredy used")
 				}
 			}
 		}
 	}
-	return true
+	return true, nil
 }
+func (ur *UserRepo) ApplyCoupon(cart_id, order_id, coupon_id int) error {
+	if cart_id == 0 {
+		order := &domain.Order{}
+		ur.DB.Where("id", order_id).First(&order)
+		if order.ID != 0 {
+			if order.Coupon_ID != 0 {
+				return errors.New("one coupon is already applied")
+			}
+			valid, err := ur.ValidateCoupon(int(order.User_ID), int(order.Product_ID), coupon_id)
+			if valid == true {
+				result := ur.DB.Table("orders").Where("id", order_id).Update("coupon_id", coupon_id)
+				if result.Error != nil {
+					return result.Error
+				}
+			} else {
+				return err
+			}
+		} else {
+			return errors.New("No product in the checklist")
+		}
+	} else {
+		cart := &domain.Cart{}
+		ur.DB.Where("cart_id", cart_id).First(&cart)
+		if cart.Cart_ID != 0 {
+			if cart.Coupon_id != 0 {
+				return errors.New("one coupon is already applied")
+			}
+			valid, err := ur.ValidateCoupon(int(cart.User_ID), int(cart.Product_ID), coupon_id)
+			if valid == true {
+				result := ur.DB.Table("carts").Where("cart_id", cart_id).Update("coupon_id", coupon_id)
+				if result.Error != nil {
+					return result.Error
+				}
+			} else {
+				return err
+			}
+		} else {
+			return errors.New("No product in the cart")
+		}
+	}
+	return nil
+}
+func (ur *UserRepo) CancelCoupon(cart_id, order_id, coupon_id int) error {
+	if cart_id == 0 {
+		order := &domain.Order{}
+		ur.DB.Where("id", order_id).First(&order)
+		if order.ID != 0 {
+			if order.Coupon_ID == 0 {
+				return errors.New("not found applied coupons !")
+			}
 
+			result := ur.DB.Model(&domain.Cart{}).Where("id", order_id).Delete("carts.coupon_id", coupon_id)
+			if result.Error != nil {
+				return result.Error
+			}
+
+		} else {
+			return errors.New("No product in the checklist")
+		}
+	} else {
+		cart := &domain.Cart{}
+		ur.DB.Where("cart_id", cart_id).First(&cart)
+		if cart.Cart_ID != 0 {
+			if cart.Coupon_id == 0 {
+				return errors.New("not found applied coupons !")
+			}
+
+			result := ur.DB.Model(&domain.Cart{}).Where("cart_id", cart_id).Delete("carts.coupon_id", coupon_id)
+			if result.Error != nil {
+				return result.Error
+			}
+
+		} else {
+			return errors.New("No product in the cart")
+		}
+	}
+	return nil
+}
 func (ur *UserRepo) DeleteCart(user_id, product_id int) error {
 	cart := &domain.Cart{}
 	Cart, err := ur.CheckExistency(user_id, product_id)
