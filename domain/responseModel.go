@@ -82,3 +82,24 @@ type CouponResponse struct {
 	Expires_At      time.Time `json:"expires_at"`
 	Coupon_Status   string    `json:"coupon_status"`
 }
+type OrderSummery struct {
+	// User_ID          uint    `json:"user_id" gorm:"not null"`
+	// Shipping_Name    string  `json:"shipping_name"`
+	// Shipping_Address string  `json:"shipping_address"`
+	// Product_Name     string  `json:"product_name"`
+	// Discription      string  `json:"discription"`
+	// Product_Image    string  `json:"product_image"`
+	User_ID         uint    `json:"user_id" gorm:"not null"`
+	Product_ID      uint    `json:"product_id" gorm:"not null"`
+	Shipping_ID     uint    `json:"shipping_id" gorm:"not null"`
+	Coupon_ID       uint    `json:"coupon_id"`
+	Quantity        int     `json:"quantity" gorm:"not null"`
+	Discount        float32 `json:"discount"`
+	TotalPrice      float32 `json:"totalprice"`
+	Grand_Total     float32 `json:"grand_total"`
+	GST             float32 `json:"gst"`
+	Final           float32 `json:"final"`
+	Mode_of_Payment string  `json:"mode_of_payment"`
+	Order_Status    string  `json:"order_status"`
+	Payment_Status  string  `json:"payment_status"`
+}

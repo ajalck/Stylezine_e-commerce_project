@@ -19,7 +19,7 @@ type Products struct {
 	Wishlist_id   uint     `json:"wishlist_id"`
 	WishList      WishList `json:"-" gorm:"foreignkey:Wishlist_id;references:Wishlist_ID"`
 	Cart_id       uint     `json:"cart_id"`
-	Cart          Cart     `json:"-" gorm:"foreignkey:Cart_id;references:Cart_ID"`
+	Cart          Cart     `json:"-" gorm:"foreignkey:Cart_id;references:ID"`
 	Size          string   `json:"size" gorm:"not null"`
 	Color         string   `json:"color" gorm:"not null"`
 	Unit_Price    float32  `json:"unit_price"`
@@ -38,11 +38,11 @@ type Brand struct {
 }
 type Coupon struct {
 	gorm.Model
-	Coupon_Code     string        `json:"coupon_code"`
-	Discount_amount float32       `json:"discount_amount"`
-	User_ID         uint          `json:"user_id"`
-	Product_ID      uint          `json:"product_id"`
-	Min_Cost        float32       `json:"min_cost"`
-	Expires_At      time.Time     `json:"expires_at"`
-	Coupon_Status   string        `json:"coupon_status"`
+	Coupon_Code     string    `json:"coupon_code"`
+	Discount_amount float32   `json:"discount_amount"`
+	User_ID         uint      `json:"user_id"`
+	Product_ID      uint      `json:"product_id"`
+	Min_Cost        float32   `json:"min_cost"`
+	Expires_At      time.Time `json:"expires_at"`
+	Coupon_Status   string    `json:"coupon_status"`
 }
