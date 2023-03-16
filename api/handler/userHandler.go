@@ -4,6 +4,7 @@ import (
 	"ajalck/e_commerce/domain"
 	services "ajalck/e_commerce/usecase/interface"
 	"ajalck/e_commerce/utils"
+	"fmt"
 	"strconv"
 
 	"net/http"
@@ -115,7 +116,8 @@ func (uh *UserHandler) DeleteWishList(c *gin.Context) {
 func (uh *UserHandler) AddCart(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
-	err := uh.userUseCase.AddCart(user_id, product_id)
+	err, cart_id := uh.userUseCase.AddCart(user_id, product_id)
+	c.Writer.Header().Set("cart_id", cart_id)
 	if err != nil {
 		response := utils.ErrorResponse("Couldn't add new item to cart", err.Error(), nil)
 		c.Writer.WriteHeader(400)
@@ -148,6 +150,51 @@ func (uh *UserHandler) ViewCart(c *gin.Context) {
 	c.Writer.WriteHeader(200)
 	utils.ResponseJSON(c, response)
 	c.JSON(200, results.MetaData)
+}
+func (uh *UserHandler) ListCoupon(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
+	product_id, _ := strconv.Atoi(c.Query("product_id"))
+
+	coupons, err := uh.userUseCase.ListCoupon(user_id, product_id)
+	if err != nil {
+		response := utils.ErrorResponse("No coupons found !", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("here is the coupons", coupons)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
+func (uh *UserHandler) ApplyCoupon(c *gin.Context) {
+	cart_id:= c.Query("cart_id")
+	order_id:=  c.Query("order_id")
+	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
+	err := uh.userUseCase.ApplyCoupon(cart_id, order_id, coupon_id)
+	if err != nil {
+		response := utils.ErrorResponse("Coupon couldn't applied !", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("Coupon applied successfully", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
+func (uh *UserHandler) CancelCoupon(c *gin.Context) {
+	cart_id:= c.Query("cart_id")
+	order_id:= c.Query("order_id")
+	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
+	err := uh.userUseCase.CancelCoupon(cart_id, order_id, coupon_id)
+	if err != nil {
+		response := utils.ErrorResponse("Coupon couldn't cancelled !", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("Coupon cancelled successfully", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) DeleteCart(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
@@ -214,27 +261,47 @@ func (uh *UserHandler) DeleteShippingDetails(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
 }
-func (uh *UserHandler) PlaceOrder(c *gin.Context) {
-<<<<<<< HEAD
+func (uh *UserHandler) CheckOut(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
+	cart_id := c.Query("cart_id")
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
 	address_id, _ := strconv.Atoi(c.Query("address_id"))
-	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
 
-	err := uh.userUseCase.PlaceOrder(c,user_id, product_id, address_id, coupon_id)
+	id, err := uh.userUseCase.CheckOut(cart_id, user_id, product_id, address_id)
 	if err != nil {
-		response := utils.ErrorResponse("Order placement failed !", err.Error(), nil)
+		response := utils.ErrorResponse("Failed to add to checkout !", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusNotFound)
 		utils.ResponseJSON(c, response)
 		return
 	}
-	response := utils.SuccessResponse("Order placed successfully", nil)
-	c.Writer.WriteHeader(http.StatusOK)
-	utils.ResponseJSON(c, response)
-=======
-	// user_id,_:=strconv.Atoi(c.Writer.Header().Get("id"))
-	// product_id,_:=strconv.Atoi(c.Query("product_id"))
-	// address_id,_:=strconv.Atoi(c.Query("address_id"))
->>>>>>> 1df3e9a651c7205727c237e280b2685ffd593ddb
+	targetURL := fmt.Sprintf("/user/order/ordersummery/:orderid?order_id=%v", id)
+	c.Redirect(http.StatusSeeOther, targetURL)
+}
+func (uh *UserHandler) OrderSummery(c *gin.Context) {
+	order_id := c.Query("order_id")
+	orderSummery, err := uh.userUseCase.OrderSummery(order_id)
 
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't display order summery", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusNotFound)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("Order summery :", orderSummery)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+
+}
+func (uh *UserHandler) UpdateOrder(c *gin.Context) {
+	order_id := c.Query("order_id")
+	err := uh.userUseCase.UpdateOrder(order_id)
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't update order", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusNotFound)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("order details updated :", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
 }

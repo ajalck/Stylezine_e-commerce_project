@@ -246,12 +246,12 @@ func (ar *AdminRepo) ListCoupon(page, perPage int) ([]domain.CouponResponse, uti
 	var coupons []domain.CouponResponse
 	var totalRecords int64
 	coupon := domain.Coupon{}
-	ar.DB.Where("coupon_status", "active").Find(&coupon).Count(&totalRecords)
+	ar.DB.Find(&coupon).Count(&totalRecords)
 	metaData, offset, err := utils.ComputeMetaData(page, perPage, int(totalRecords))
 	if err != nil {
 		return coupons, metaData, err
 	}
-	results := ar.DB.Model(&coupon).Select("id", "coupon_code", "discount_amount", "user_id", "product_id", "min_cost", "expires_at", "coupon_status").Where("coupon_status", "active").Offset(offset).Limit(page).Find(&coupons)
+	results := ar.DB.Model(&coupon).Select("id", "coupon_code", "discount_amount", "user_id", "product_id", "min_cost", "expires_at", "coupon_status").Offset(offset).Limit(perPage).Find(&coupons)
 	if results.Error != nil {
 		return coupons, metaData, results.Error
 	}

@@ -92,12 +92,12 @@ func (uc *userUseCase) DeleteWishList(user_id, product_id int) error {
 
 //Cart
 
-func (uc *userUseCase) AddCart(user_id, product_id int) error {
-	err := uc.userRepo.AddCart(user_id, product_id)
+func (uc *userUseCase) AddCart(user_id, product_id int) (error, string) {
+	err, cart_id := uc.userRepo.AddCart(user_id, product_id)
 	if err != nil {
-		return err
+		return err, cart_id
 	}
-	return nil
+	return nil, cart_id
 }
 func (uc *userUseCase) ViewCart(user_id, page, perPage int) ([]domain.CartResponse, utils.MetaData, error) {
 	carts, metaData, err := uc.userRepo.ViewCart(user_id, page, perPage)
@@ -105,6 +105,31 @@ func (uc *userUseCase) ViewCart(user_id, page, perPage int) ([]domain.CartRespon
 		return carts, metaData, err
 	}
 	return carts, metaData, nil
+}
+func (uc *userUseCase) ListCoupon(user_id, product_id int) ([]domain.CouponResponse, error) {
+	coupons, err := uc.userRepo.ListCoupon(user_id, product_id)
+	if err != nil {
+		return coupons, err
+	}
+	return coupons, nil
+}
+func (uc *userUseCase) ApplyCoupon(cart_id, order_id string, coupon_id int) error {
+
+	err := uc.userRepo.ApplyCoupon(cart_id, order_id, coupon_id)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+func (uc *userUseCase) CancelCoupon(cart_id, order_id string, coupon_id int) error {
+
+	err := uc.userRepo.CancelCoupon(cart_id, order_id, coupon_id)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 func (uc *userUseCase) DeleteCart(user_id, product_id int) error {
 	err := uc.userRepo.DeleteCart(user_id, product_id)
@@ -139,17 +164,28 @@ func (uc *userUseCase) DeleteShippingDetails(user_id, address_id int) error {
 }
 
 // Order
-func (uc *userUseCase) PlaceOrder(user_id, product_id, address_id, coupon_id int) error {
-	if product_id == 0 {
-		return errors.New("Please select a product")
+func (uc *userUseCase) CheckOut(cart_id string, user_id, product_id, address_id int) (string, error) {
+	if product_id == 0 && cart_id == "" {
+		return "", errors.New("Please select a product")
 	}
 	if address_id == 0 {
-		gin.Default().GET("/user/order/place", func(c *gin.Context) {
-			c.Request.URL.Path = "/user/shipping/adddetails"
-			gin.Default().HandleContext(c)
-		})
+		return "", errors.New("Please enter the shipping details")
 	}
-	err := uc.userRepo.PlaceOrder(user_id, product_id, address_id, coupon_id)
+	id, err := uc.userRepo.CheckOut(cart_id, user_id, product_id, address_id)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
+}
+func (uc *userUseCase) OrderSummery(order_id string) ([]domain.OrderSummery, error) {
+	orderSummery, err := uc.userRepo.OrderSummery(order_id)
+	if err != nil {
+		return orderSummery, err
+	}
+	return orderSummery, err
+}
+func (uc *userUseCase) UpdateOrder(orders_id string) error {
+	err := uc.userRepo.UpdateOrder(orders_id)
 	if err != nil {
 		return err
 	}

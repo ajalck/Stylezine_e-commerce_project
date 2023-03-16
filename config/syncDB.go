@@ -33,5 +33,8 @@ func SyncDB(db *gorm.DB) {
 	if err := (db.AutoMigrate(&domain.Coupon{})); err != nil {
 		log.Println("Failed to sync 'Coupon' table")
 	}
+	if err := (db.AutoMigrate(&domain.Order{})); err != nil {
+		log.Println("Failed to sync 'Order' table")
+	}
 
 }
