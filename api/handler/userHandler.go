@@ -4,7 +4,6 @@ import (
 	"ajalck/e_commerce/domain"
 	services "ajalck/e_commerce/usecase/interface"
 	"ajalck/e_commerce/utils"
-	"fmt"
 	"strconv"
 
 	"net/http"
@@ -167,8 +166,8 @@ func (uh *UserHandler) ListCoupon(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) ApplyCoupon(c *gin.Context) {
-	cart_id:= c.Query("cart_id")
-	order_id:=  c.Query("order_id")
+	cart_id := c.Query("cart_id")
+	order_id := c.Query("order_id")
 	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
 	err := uh.userUseCase.ApplyCoupon(cart_id, order_id, coupon_id)
 	if err != nil {
@@ -182,8 +181,8 @@ func (uh *UserHandler) ApplyCoupon(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 }
 func (uh *UserHandler) CancelCoupon(c *gin.Context) {
-	cart_id:= c.Query("cart_id")
-	order_id:= c.Query("order_id")
+	cart_id := c.Query("cart_id")
+	order_id := c.Query("order_id")
 	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
 	err := uh.userUseCase.CancelCoupon(cart_id, order_id, coupon_id)
 	if err != nil {
@@ -274,8 +273,11 @@ func (uh *UserHandler) CheckOut(c *gin.Context) {
 		utils.ResponseJSON(c, response)
 		return
 	}
-	targetURL := fmt.Sprintf("/user/order/ordersummery/:orderid?order_id=%v", id)
-	c.Redirect(http.StatusSeeOther, targetURL)
+	response := utils.SuccessResponse("added to checkout", nil)
+	c.Writer.WriteHeader(http.StatusOK)
+	c.Writer.Header().Set("order_id", id)
+	utils.ResponseJSON(c, response)
+
 }
 func (uh *UserHandler) OrderSummery(c *gin.Context) {
 	order_id := c.Query("order_id")
@@ -293,12 +295,20 @@ func (uh *UserHandler) OrderSummery(c *gin.Context) {
 
 }
 func (uh *UserHandler) UpdateOrder(c *gin.Context) {
-	order_id := c.Query("order_id")
-	err := uh.userUseCase.UpdateOrder(order_id)
-	if err != nil {
+	type OrderUpdates struct {
+		Quantity        int    `json:"quantity"`
+		Mode_of_Payment string `json:"mode_of_payment"`
+	}
+	updates := &OrderUpdates{}
+	if err := c.Bind(&updates); err != nil {
 		response := utils.ErrorResponse("Couldn't update order", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusNotFound)
 		utils.ResponseJSON(c, response)
+	}
+	order_id := c.Query("order_id")
+	err := uh.userUseCase.UpdateOrder(order_id, updates)
+	if err != nil {
+
 		return
 	}
 	response := utils.SuccessResponse("order details updated :", nil)

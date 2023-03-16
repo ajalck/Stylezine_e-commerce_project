@@ -248,15 +248,22 @@ func (ah *AdminHandler) AddProducts(c *gin.Context) {
 
 	var NewProducts domain.Products
 	if err := c.Bind(&NewProducts); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Inputs !"})
+		response := utils.ErrorResponse("Invalid inputs !", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusBadRequest)
+		utils.ResponseJSON(c, response)
 		return
 	}
-	err := ah.adminUseCase.AddProducts(NewProducts)
+	product_code, err := ah.adminUseCase.AddProducts(NewProducts)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Unable to add a new product !"})
-	} else {
-		c.JSON(http.StatusOK, gin.H{"success": "New Product added successfully "})
+		response := utils.ErrorResponse("Unable to add a new product !", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusBadRequest)
+		utils.ResponseJSON(c, response)
+		return
 	}
+	response := utils.SuccessResponse("Product added successfully", nil)
+	c.Writer.Header().Set("product_code", product_code)
+	c.Writer.WriteHeader(http.StatusBadRequest)
+	utils.ResponseJSON(c, response)
 
 }
 func (ah *AdminHandler) EditProducts(c *gin.Context) {

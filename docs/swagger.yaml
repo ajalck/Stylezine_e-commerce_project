@@ -15,20 +15,18 @@ definitions:
         type: integer
       last_name:
         type: string
+      level:
+        type: string
       password:
         type: string
       phone:
         type: string
       status:
         type: string
-      token:
-        type: string
       updatedAt:
         type: string
       user_role:
         type: string
-      verification:
-        type: boolean
     type: object
   gorm.DeletedAt:
     properties:
@@ -49,15 +47,15 @@ definitions:
     type: object
 info:
   contact:
-    email: fazilkp2000@gmail.com
+    email: ack6627@gmail.com
     name: API Support
-    url: https://fazilnbr.github.io/mypeosolal.web.portfolio/
+    url: https://github.com/ajalck/ajal_portfolio
   description: This is a sample server Job Portal server. You can visit the GitHub
-    repository at https://github.com/fazilnbr/Job_Portal_Project
+    repository at https://github.com/ajalck/Stylezine_e-commerce_project
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-  title: Go + Gin Workey API
+  title: Go + Gin Stylezine API
   version: "1.0"
 paths:
   /admin/registration/login:

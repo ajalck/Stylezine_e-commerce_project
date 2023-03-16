@@ -1,12 +1,12 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/fazilnbr/Job_Portal_Project",
-        "title": "Go + Gin Workey API",
+        "description": "This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/ajalck/Stylezine_e-commerce_project",
+        "title": "Go + Gin Stylezine API",
         "contact": {
             "name": "API Support",
-            "url": "https://fazilnbr.github.io/mypeosolal.web.portfolio/",
-            "email": "fazilkp2000@gmail.com"
+            "url": "https://github.com/ajalck/ajal_portfolio",
+            "email": "ack6627@gmail.com"
         },
         "license": {
             "name": "MIT",
@@ -104,6 +104,9 @@
                 "last_name": {
                     "type": "string"
                 },
+                "level": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -113,17 +116,11 @@
                 "status": {
                     "type": "string"
                 },
-                "token": {
-                    "type": "string"
-                },
                 "updatedAt": {
                     "type": "string"
                 },
                 "user_role": {
                     "type": "string"
-                },
-                "verification": {
-                    "type": "boolean"
                 }
             }
         },

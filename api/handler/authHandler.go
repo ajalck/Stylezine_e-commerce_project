@@ -38,13 +38,13 @@ func NewAdminAuthHandler(
 	}
 }
 
-// @title Go + Gin Workey API
+// @title Go + Gin Stylezine API
 // @version 1.0
-// @description This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/fazilnbr/Job_Portal_Project
+// @description This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/ajalck/Stylezine_e-commerce_project
 
 // @contact.name API Support
-// @contact.url https://fazilnbr.github.io/mypeosolal.web.portfolio/
-// @contact.email fazilkp2000@gmail.com
+// @contact.url https://github.com/ajalck/ajal_portfolio
+// @contact.email ack6627@gmail.com
 
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT

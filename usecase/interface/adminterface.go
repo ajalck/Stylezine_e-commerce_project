@@ -25,7 +25,7 @@ type AdminUseCase interface {
 	EditBrand(brand domain.Brand) error
 	DeleteBrand(brand domain.Brand) error
 
-	AddProducts(products domain.Products) error
+	AddProducts(products domain.Products) (string, error)
 	EditProducts(products domain.Products) error
 	DeleteProducts(products domain.Products) error
 

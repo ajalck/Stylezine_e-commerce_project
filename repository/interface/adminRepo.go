@@ -18,7 +18,7 @@ type AdminRepository interface {
 	BlockUser(id int)
 	UnblockUser(id int)
 
-	AddProducts(products domain.Products) error
+	AddProducts(products domain.Products) (string,error)
 	EditProducts(products domain.Products) error
 	DeleteProducts(products domain.Products) error
 

@@ -11,8 +11,8 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "contact": {
             "name": "API Support",
-            "url": "https://fazilnbr.github.io/mypeosolal.web.portfolio/",
-            "email": "fazilkp2000@gmail.com"
+            "url": "https://github.com/ajalck/ajal_portfolio",
+            "email": "ack6627@gmail.com"
         },
         "license": {
             "name": "MIT",
@@ -112,6 +112,9 @@ const docTemplate = `{
                 "last_name": {
                     "type": "string"
                 },
+                "level": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -121,17 +124,11 @@ const docTemplate = `{
                 "status": {
                     "type": "string"
                 },
-                "token": {
-                    "type": "string"
-                },
                 "updatedAt": {
                     "type": "string"
                 },
                 "user_role": {
                     "type": "string"
-                },
-                "verification": {
-                    "type": "boolean"
                 }
             }
         },
@@ -176,8 +173,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Go + Gin Workey API",
-	Description:      "This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/fazilnbr/Job_Portal_Project",
+	Title:            "Go + Gin Stylezine API",
+	Description:      "This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/ajalck/Stylezine_e-commerce_project",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

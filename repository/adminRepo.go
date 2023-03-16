@@ -192,13 +192,25 @@ func (ar *AdminRepo) DeleteBrand(brand domain.Brand) error {
 
 // Product Management
 
-func (ar *AdminRepo) AddProducts(products domain.Products) error {
-
-	if err := ar.DB.Raw("INSERT INTO products (item,product_name,discription,product_image,category_id,brand_id,size,color,unit_price,stock,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)RETURNING id ;",
-		products.Item, products.Product_Name, products.Discription, products.Product_Image, products.Category_id, products.Brand_id, products.Size, products.Color, products.Unit_Price, products.Stock, products.Status).Scan(&products).Error; err != nil {
-		return err
+func (ar *AdminRepo) AddProducts(products domain.Products) (string, error) {
+	product := domain.Products{}
+	results := ar.DB.Where(&domain.Products{Product_Name: products.Product_Name,
+		Category_id: products.Category_id,
+		Brand_id:    products.Brand_id,
+		Size:        products.Size,
+		Color:       products.Color}).First(&product)
+	if results.Error != nil {
+		if err := ar.DB.Raw("INSERT INTO products (product_code,item,product_name,discription,product_image,category_id,brand_id,size,color,unit_price,stock,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)RETURNING product_code ;",
+			utils.GenerateID(), products.Item, products.Product_Name, products.Discription, products.Product_Image, products.Category_id, products.Brand_id, products.Size, products.Color, products.Unit_Price, products.Stock, products.Status).Scan(&products).Error; err != nil {
+			return "", err
+		}
+		return products.Product_Code, nil
 	}
-	return nil
+	err := ar.DB.Model(&domain.Products{}).Where("product_code", product.Product_Code).Update("stock", (product.Stock + 1))
+	if err.Error != nil {
+		return "", err.Error
+	}
+	return product.Product_Code, nil
 }
 func (ar *AdminRepo) EditProducts(product domain.Products) error {
 

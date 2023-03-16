@@ -191,14 +191,14 @@ func (au *adminUseCase) DeleteBrand(brand domain.Brand) error {
 
 // Product Management
 
-func (au *adminUseCase) AddProducts(newProduct domain.Products) error {
+func (au *adminUseCase) AddProducts(newProduct domain.Products) (string, error) {
 	newProduct.Status = "available"
-	err := au.adminRepo.AddProducts(newProduct)
+	product_code, err := au.adminRepo.AddProducts(newProduct)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return product_code, nil
 }
 func (au *adminUseCase) EditProducts(newProduct domain.Products) error {
 

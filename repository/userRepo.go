@@ -6,7 +6,6 @@ import (
 	"ajalck/e_commerce/utils"
 	"errors"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -33,11 +32,6 @@ func (ur *UserRepo) CreateUser(c *gin.Context, newUser domain.User) error {
 func (ur *UserRepo) FindUser(c *gin.Context, email string, userRole string) (domain.User, error) {
 
 	var users domain.User
-
-	// user := ur.DB.First(&users, "Email=?", email)
-
-	// user := ur.DB.Where("Email = ? AND UserRole = ?", email, userRole).Find(&users)
-
 	user := ur.DB.Where(&domain.User{Email: email, User_Role: userRole}).First(&users)
 
 	if user.Error != nil {
@@ -131,15 +125,6 @@ func (ur *UserRepo) DeleteWishList(user_id, product_id int) error {
 }
 
 // Cart
-func generateID() string {
-	rand.Seed(time.Now().UnixNano())
-	chars := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
-	id := make([]rune, 10)
-	for i := range id {
-		id[i] = chars[rand.Intn(len(chars))]
-	}
-	return string(id)
-}
 func (ur *UserRepo) AddCart(user_id, product_id int) (error, string) {
 
 	product := &domain.Products{}
@@ -154,7 +139,7 @@ func (ur *UserRepo) AddCart(user_id, product_id int) (error, string) {
 	if result.Error == nil {
 		id = excart.Cart_ID
 	} else {
-		id = generateID()
+		id = utils.GenerateID()
 	}
 	//
 
@@ -421,7 +406,7 @@ func (ur *UserRepo) CheckOut(cart_id string, user_id, product_id, address_id int
 		if result.Error != nil {
 			return "", result.Error
 		}
-		id := generateID()
+		id := utils.GenerateID()
 		var totalPrice float32 = 0
 		var discount float32 = 0
 		for i := range cart {
@@ -461,7 +446,7 @@ func (ur *UserRepo) CheckOut(cart_id string, user_id, product_id, address_id int
 		if err != nil {
 			return "", err
 		}
-		id := generateID()
+		id := utils.GenerateID()
 		result = ur.DB.Create(&domain.Order{
 			Order_ID:       id,
 			User_ID:        uint(user_id),
@@ -503,6 +488,10 @@ func (ur *UserRepo) OrderSummery(order_id string) ([]domain.OrderSummery, error)
 	}
 	return orderSummery, results.Error
 }
-func (ur *UserRepo) UpdateOrder(orders_id string) error {
-	return fmt.Errorf("nothing")
+func (ur *UserRepo) UpdateOrder(order_id string, orderUpdates interface{}) error {
+	// order, _ := ur.OrderSummery(order_id)
+	// for i := range order {
+
+	// }
+	return fmt.Errorf("odfjla")
 }
