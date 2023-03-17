@@ -1,4 +1,39 @@
 definitions:
+  domain.ShippingDetails:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      land_mark:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      pin_code:
+        type: string
+      street:
+        type: string
+      updatedAt:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - email
+    - phone
+    - pin_code
+    type: object
   domain.User:
     properties:
       createdAt:
@@ -75,6 +110,209 @@ paths:
       summary: admin signin
       tags:
       - admin Authentication
+  /user/cart/add/:productid:
+    post:
+      operationId: user add cart
+      parameters:
+      - description: Product_ID
+        in: query
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Add product to cart
+      tags:
+      - User Cart
+  /user/cart/remove/:productid:
+    post:
+      operationId: user delete cart
+      parameters:
+      - description: Product_ID
+        in: query
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: remove product from cart
+      tags:
+      - User Cart
+  /user/cart/view/:page/:records:
+    get:
+      operationId: user view cart
+      parameters:
+      - description: page no
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: no of records
+        in: query
+        name: records
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: View cart
+      tags:
+      - User Cart
+  /user/coupon/applycoupon/:cartid/:orderid/:couponid:
+    post:
+      operationId: user apply coupon
+      parameters:
+      - description: cart_ID
+        in: query
+        name: cart_id
+        required: true
+        type: string
+      - description: order_id
+        in: query
+        name: order_id
+        required: true
+        type: string
+      - description: coupon_id
+        in: query
+        name: coupon_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Apply coupon
+      tags:
+      - User Coupon
+  /user/coupon/cancelcoupon/:cartid/:orderid/:couponid:
+    delete:
+      operationId: user cancel coupon
+      parameters:
+      - description: cart_ID
+        in: query
+        name: cart_id
+        required: true
+        type: string
+      - description: order_id
+        in: query
+        name: order_id
+        required: true
+        type: string
+      - description: coupon_id
+        in: query
+        name: coupon_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Cancel coupon
+      tags:
+      - User Coupon
+  /user/coupon/listcoupon/:productid:
+    get:
+      operationId: user list coupon
+      parameters:
+      - description: Product_ID
+        in: query
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: List coupon
+      tags:
+      - User Coupon
+  /user/listproducts/:page/:records:
+    get:
+      operationId: list products to user
+      parameters:
+      - description: Page No
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: No of records
+        in: query
+        name: records
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: List products to user
+      tags:
+      - List Products
   /user/login:
     post:
       operationId: user signin
@@ -99,6 +337,271 @@ paths:
       summary: user signin
       tags:
       - User Authentication
+  /user/order/checkout/:cartid/:productid/:shippingid:
+    post:
+      operationId: user add to checkout
+      parameters:
+      - description: cart_ID
+        in: query
+        name: cart_id
+        required: true
+        type: string
+      - description: product_ID
+        in: query
+        name: product_id
+        required: true
+        type: string
+      - description: address_ID
+        in: query
+        name: address_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Add to checkout
+      tags:
+      - User Order
+  /user/order/ordersummery/:orderid:
+    get:
+      operationId: user view order summery
+      parameters:
+      - description: order_ID
+        in: query
+        name: order_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: View order summery
+      tags:
+      - User Order
+  /user/order/update/:orderid:
+    patch:
+      operationId: user update order
+      parameters:
+      - description: order_ID
+        in: query
+        name: order_id
+        required: true
+        type: string
+      - description: Order Updates
+        in: body
+        name: OrderUpdates
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: update order
+      tags:
+      - User Order
+  /user/shipping/adddetails:
+    post:
+      operationId: user add shipping details
+      parameters:
+      - description: Shipping details
+        in: body
+        name: newAddress
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ShippingDetails'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Add Shipping details
+      tags:
+      - User Shipping details
+  /user/shipping/deletedetails/:addressid:
+    delete:
+      operationId: user delete shipping details
+      parameters:
+      - description: address_ID
+        in: query
+        name: address_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete Shipping details
+      tags:
+      - User Shipping details
+  /user/shipping/listdetails:
+    get:
+      operationId: user list shipping details
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: List Shipping details
+      tags:
+      - User Shipping details
+  /user/signup:
+    post:
+      operationId: create user
+      parameters:
+      - description: New User
+        in: body
+        name: newUser
+        required: true
+        schema:
+          $ref: '#/definitions/domain.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Add user to database
+      tags:
+      - User SignUP
+  /user/wishlist/add/:productid:
+    post:
+      operationId: user add wishlist
+      parameters:
+      - description: Product_ID
+        in: query
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Add product to wishlist
+      tags:
+      - User Wishlist
+  /user/wishlist/remove/:productid:
+    delete:
+      operationId: user delete wishlist
+      parameters:
+      - description: Product_ID
+        in: query
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Remove product from wishlist
+      tags:
+      - User Wishlist
+  /user/wishlist/view/:page/:records:
+    get:
+      operationId: user view wishlist
+      parameters:
+      - description: page no
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: no of records
+        in: query
+        name: records
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: View wishlist
+      tags:
+      - User Wishlist
 securityDefinitions:
   BearerAuth:
     in: header

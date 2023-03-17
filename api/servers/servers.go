@@ -51,7 +51,7 @@ func UserServer(routes *gin.Engine,
 			{
 				order.POST("/checkout/:cartid/:productid/:shippingid", userHandler.CheckOut)
 				order.GET("/ordersummery/:orderid", userHandler.OrderSummery)
-				order.PATCH("/ordersummery/update/:orderid", userHandler.UpdateOrder)
+				order.PATCH("/update/:orderid", userHandler.UpdateOrder)
 			}
 		}
 	}

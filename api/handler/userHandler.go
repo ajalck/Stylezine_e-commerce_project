@@ -19,6 +19,32 @@ func NewUserHandler(userUseCase services.UserUseCase) *UserHandler {
 	return &UserHandler{userUseCase: userUseCase}
 }
 
+// @title Go + Gin Stylezine API
+// @version 1.0
+// @description This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/ajalck/Stylezine_e-commerce_project
+
+// @contact.name API Support
+// @contact.url https://github.com/ajalck/ajal_portfolio
+// @contact.email ack6627@gmail.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @host localhost:5050
+// @BasePath
+// @query.collection.format multi
+
+// @Summary Add user to database
+// @ID create user
+// @Tags User SignUP
+// @Produce json
+// @Param newUser body domain.User{} true "New User"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/signup [post]
 func (uh *UserHandler) CreateUser(c *gin.Context) {
 	var newUser domain.User
 	if err := c.Bind(&newUser); err != nil {
@@ -36,6 +62,16 @@ func (uh *UserHandler) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusFound, gin.H{"message": "New user created successfully"})
 	}
 }
+
+// @Summary List products to user
+// @ID list products to user
+// @Tags List Products
+// @Produce json
+// @Param page query string true "Page No"
+// @Param records query string true "No of records"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/listproducts/:page/:records [get]
 func (uh *UserHandler) ListProducts(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Query("page"))
 	perPage, _ := strconv.Atoi(c.Query("records"))
@@ -58,8 +94,15 @@ func (uh *UserHandler) ListProducts(c *gin.Context) {
 	}
 }
 
-//Wishlist
-
+// @Summary Add product to wishlist
+// @ID user add wishlist
+// @Tags User Wishlist
+// @Security BearerAuth
+// @Produce json
+// @Param product_id query string true "Product_ID"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/wishlist/add/:productid [post]
 func (uh *UserHandler) AddWishlist(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
@@ -74,6 +117,17 @@ func (uh *UserHandler) AddWishlist(c *gin.Context) {
 	c.Writer.WriteHeader(200)
 	utils.ResponseJSON(c, response)
 }
+
+// @Summary View wishlist
+// @ID user view wishlist
+// @Tags User Wishlist
+// @Security BearerAuth
+// @Produce json
+// @Param page query string true "page no"
+// @Param records query string true "no of records"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/wishlist/view/:page/:records [get]
 func (uh *UserHandler) ViewWishList(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	page, _ := strconv.Atoi(c.Query("page"))
@@ -95,6 +149,16 @@ func (uh *UserHandler) ViewWishList(c *gin.Context) {
 	c.Writer.WriteHeader(200)
 	utils.ResponseJSON(c, response)
 }
+
+// @Summary Remove product from wishlist
+// @ID user delete wishlist
+// @Tags User Wishlist
+// @Security BearerAuth
+// @Produce json
+// @Param product_id query string true "Product_ID"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/wishlist/remove/:productid [delete]
 func (uh *UserHandler) DeleteWishList(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
@@ -112,6 +176,15 @@ func (uh *UserHandler) DeleteWishList(c *gin.Context) {
 
 //Cart
 
+// @Summary Add product to cart
+// @ID user add cart
+// @Tags User Cart
+// @Security BearerAuth
+// @Produce json
+// @Param product_id query string true "Product_ID"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/cart/add/:productid [post]
 func (uh *UserHandler) AddCart(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
@@ -127,6 +200,17 @@ func (uh *UserHandler) AddCart(c *gin.Context) {
 	c.Writer.WriteHeader(200)
 	utils.ResponseJSON(c, response)
 }
+
+// @Summary View cart
+// @ID user view cart
+// @Tags User Cart
+// @Security BearerAuth
+// @Produce json
+// @Param page query string true "page no"
+// @Param records query string true "no of records"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/cart/view/:page/:records [get]
 func (uh *UserHandler) ViewCart(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	page, _ := strconv.Atoi(c.Query("page"))
@@ -150,51 +234,16 @@ func (uh *UserHandler) ViewCart(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 	c.JSON(200, results.MetaData)
 }
-func (uh *UserHandler) ListCoupon(c *gin.Context) {
-	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
-	product_id, _ := strconv.Atoi(c.Query("product_id"))
 
-	coupons, err := uh.userUseCase.ListCoupon(user_id, product_id)
-	if err != nil {
-		response := utils.ErrorResponse("No coupons found !", err.Error(), nil)
-		c.Writer.WriteHeader(400)
-		utils.ResponseJSON(c, response)
-		return
-	}
-	response := utils.SuccessResponse("here is the coupons", coupons)
-	c.Writer.WriteHeader(200)
-	utils.ResponseJSON(c, response)
-}
-func (uh *UserHandler) ApplyCoupon(c *gin.Context) {
-	cart_id := c.Query("cart_id")
-	order_id := c.Query("order_id")
-	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
-	err := uh.userUseCase.ApplyCoupon(cart_id, order_id, coupon_id)
-	if err != nil {
-		response := utils.ErrorResponse("Coupon couldn't applied !", err.Error(), nil)
-		c.Writer.WriteHeader(400)
-		utils.ResponseJSON(c, response)
-		return
-	}
-	response := utils.SuccessResponse("Coupon applied successfully", nil)
-	c.Writer.WriteHeader(200)
-	utils.ResponseJSON(c, response)
-}
-func (uh *UserHandler) CancelCoupon(c *gin.Context) {
-	cart_id := c.Query("cart_id")
-	order_id := c.Query("order_id")
-	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
-	err := uh.userUseCase.CancelCoupon(cart_id, order_id, coupon_id)
-	if err != nil {
-		response := utils.ErrorResponse("Coupon couldn't cancelled !", err.Error(), nil)
-		c.Writer.WriteHeader(400)
-		utils.ResponseJSON(c, response)
-		return
-	}
-	response := utils.SuccessResponse("Coupon cancelled successfully", nil)
-	c.Writer.WriteHeader(200)
-	utils.ResponseJSON(c, response)
-}
+// @Summary remove product from cart
+// @ID user delete cart
+// @Tags User Cart
+// @Security BearerAuth
+// @Produce json
+// @Param product_id query string true "Product_ID"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/cart/remove/:productid [post]
 func (uh *UserHandler) DeleteCart(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	product_id, _ := strconv.Atoi(c.Query("product_id"))
@@ -210,8 +259,98 @@ func (uh *UserHandler) DeleteCart(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 }
 
+//Coupon
+
+// @Summary List coupon
+// @ID user list coupon
+// @Tags User Coupon
+// @Security BearerAuth
+// @Produce json
+// @Param product_id query string true "Product_ID"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/coupon/listcoupon/:productid [get]
+func (uh *UserHandler) ListCoupon(c *gin.Context) {
+	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
+	product_id, _ := strconv.Atoi(c.Query("product_id"))
+
+	coupons, err := uh.userUseCase.ListCoupon(user_id, product_id)
+	if err != nil {
+		response := utils.ErrorResponse("No coupons found !", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("here is the coupons", coupons)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
+
+// @Summary Apply coupon
+// @ID user apply coupon
+// @Tags User Coupon
+// @Security BearerAuth
+// @Produce json
+// @Param cart_id query string true "cart_ID"
+// @Param order_id query string true "order_id"
+// @Param coupon_id query string true "coupon_id"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/coupon/applycoupon/:cartid/:orderid/:couponid [post]
+func (uh *UserHandler) ApplyCoupon(c *gin.Context) {
+	cart_id := c.Query("cart_id")
+	order_id := c.Query("order_id")
+	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
+	err := uh.userUseCase.ApplyCoupon(cart_id, order_id, coupon_id)
+	if err != nil {
+		response := utils.ErrorResponse("Coupon couldn't applied !", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("Coupon applied successfully", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
+
+// @Summary Cancel coupon
+// @ID user cancel coupon
+// @Tags User Coupon
+// @Security BearerAuth
+// @Produce json
+// @Param cart_id query string true "cart_ID"
+// @Param order_id query string true "order_id"
+// @Param coupon_id query string true "coupon_id"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/coupon/cancelcoupon/:cartid/:orderid/:couponid [delete]
+func (uh *UserHandler) CancelCoupon(c *gin.Context) {
+	cart_id := c.Query("cart_id")
+	order_id := c.Query("order_id")
+	coupon_id, _ := strconv.Atoi(c.Query("coupon_id"))
+	err := uh.userUseCase.CancelCoupon(cart_id, order_id, coupon_id)
+	if err != nil {
+		response := utils.ErrorResponse("Coupon couldn't cancelled !", err.Error(), nil)
+		c.Writer.WriteHeader(400)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	response := utils.SuccessResponse("Coupon cancelled successfully", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
+
 //Shipping
 
+// @Summary Add Shipping details
+// @ID user add shipping details
+// @Tags User Shipping details
+// @Security BearerAuth
+// @Produce json
+// @Param newAddress body domain.ShippingDetails{} true "Shipping details"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/shipping/adddetails [post]
 func (uh *UserHandler) AddShippingDetails(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	var newAddress domain.ShippingDetails
@@ -232,6 +371,15 @@ func (uh *UserHandler) AddShippingDetails(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
 }
+
+// @Summary List Shipping details
+// @ID user list shipping details
+// @Tags User Shipping details
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/shipping/listdetails [get]
 func (uh *UserHandler) ListShippingDetails(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	shippingDetails, err := uh.userUseCase.ListShippingDetails(user_id)
@@ -246,6 +394,15 @@ func (uh *UserHandler) ListShippingDetails(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 }
 
+// @Summary Delete Shipping details
+// @ID user delete shipping details
+// @Tags User Shipping details
+// @Security BearerAuth
+// @Produce json
+// @Param address_id query string true "address_ID"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/shipping/deletedetails/:addressid [delete]
 func (uh *UserHandler) DeleteShippingDetails(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	address_id, _ := strconv.Atoi(c.Query("address_id"))
@@ -260,6 +417,20 @@ func (uh *UserHandler) DeleteShippingDetails(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
 }
+
+//Order
+
+// @Summary Add to checkout
+// @ID user add to checkout
+// @Tags User Order
+// @Security BearerAuth
+// @Produce json
+// @Param cart_id query string true "cart_ID"
+// @Param product_id query string true "product_ID"
+// @Param address_id query string true "address_ID"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/order/checkout/:cartid/:productid/:shippingid [post]
 func (uh *UserHandler) CheckOut(c *gin.Context) {
 	user_id, _ := strconv.Atoi(c.Writer.Header().Get("id"))
 	cart_id := c.Query("cart_id")
@@ -279,6 +450,16 @@ func (uh *UserHandler) CheckOut(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 
 }
+
+// @Summary View order summery
+// @ID user view order summery
+// @Tags User Order
+// @Security BearerAuth
+// @Produce json
+// @Param order_id query string true "order_ID"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/order/ordersummery/:orderid [get]
 func (uh *UserHandler) OrderSummery(c *gin.Context) {
 	order_id := c.Query("order_id")
 	orderSummery, err := uh.userUseCase.OrderSummery(order_id)
@@ -294,6 +475,17 @@ func (uh *UserHandler) OrderSummery(c *gin.Context) {
 	utils.ResponseJSON(c, response)
 
 }
+
+// @Summary update order
+// @ID user update order
+// @Tags User Order
+// @Security BearerAuth
+// @Produce json
+// @Param order_id query string true "order_ID"
+// @Param OrderUpdates body interface{} true "Order Updates"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /user/order/update/:orderid [patch]
 func (uh *UserHandler) UpdateOrder(c *gin.Context) {
 	type OrderUpdates struct {
 		Quantity        int    `json:"quantity"`
