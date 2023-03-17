@@ -38,24 +38,6 @@ func NewAdminAuthHandler(
 	}
 }
 
-// @title Go + Gin Stylezine API
-// @version 1.0
-// @description This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/ajalck/Stylezine_e-commerce_project
-
-// @contact.name API Support
-// @contact.url https://github.com/ajalck/ajal_portfolio
-// @contact.email ack6627@gmail.com
-
-// @license.name MIT
-// @license.url https://opensource.org/licenses/MIT
-
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
-// @host localhost:5050
-// @BasePath
-// @query.collection.format multi
-
 // @Summary user signin
 // @ID user signin
 // @Tags User Authentication
