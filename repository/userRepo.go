@@ -206,6 +206,28 @@ func (ur *UserRepo) UpdateCoupon() error {
 	}
 	return nil
 }
+func (ur *UserRepo) DeleteCart(user_id, product_id int) error {
+	cart := &domain.Cart{}
+	Cart, err := ur.CheckExistency(user_id, product_id)
+	if err == nil {
+		unit_price := (Cart.Total_Price / float32(Cart.Quantity))
+		if Cart.Quantity > 1 {
+			Cart.Quantity = Cart.Quantity - 1
+			Cart.Total_Price = unit_price * float32(Cart.Quantity)
+			ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Quantity: Cart.Quantity, Total_Price: Cart.Total_Price})
+			return nil
+		}
+		result := ur.DB.Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Delete(&cart)
+		if result.Error != nil {
+			return result.Error
+		}
+		return nil
+	}
+	return err
+}
+
+//Coupon
+
 func (ur *UserRepo) ListCoupon(user_id, product_id int) ([]domain.CouponResponse, error) {
 	coupons := []domain.CouponResponse{}
 	err := ur.UpdateCoupon()
@@ -259,7 +281,7 @@ func (ur *UserRepo) ApplyCoupon(cart_id, order_id string, coupon_id int) error {
 			}
 			valid, err := ur.ValidateCoupon(int(order.User_ID), int(order.Product_ID), coupon_id)
 			if valid == true {
-				result := ur.DB.Table("orders").Where("cart_id", order_id).Update("coupon_id", coupon_id)
+				result := ur.DB.Table("orders").Where("order_id", order_id).Update("coupon_id", coupon_id)
 				if result.Error != nil {
 					return result.Error
 				}
@@ -326,25 +348,6 @@ func (ur *UserRepo) CancelCoupon(cart_id, order_id string, coupon_id int) error 
 		}
 	}
 	return nil
-}
-func (ur *UserRepo) DeleteCart(user_id, product_id int) error {
-	cart := &domain.Cart{}
-	Cart, err := ur.CheckExistency(user_id, product_id)
-	if err == nil {
-		unit_price := (Cart.Total_Price / float32(Cart.Quantity))
-		if Cart.Quantity > 1 {
-			Cart.Quantity = Cart.Quantity - 1
-			Cart.Total_Price = unit_price * float32(Cart.Quantity)
-			ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Quantity: Cart.Quantity, Total_Price: Cart.Total_Price})
-			return nil
-		}
-		result := ur.DB.Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Delete(&cart)
-		if result.Error != nil {
-			return result.Error
-		}
-		return nil
-	}
-	return err
 }
 
 //Shipping
@@ -488,10 +491,11 @@ func (ur *UserRepo) OrderSummery(order_id string) ([]domain.OrderSummery, error)
 	}
 	return orderSummery, results.Error
 }
-func (ur *UserRepo) UpdateOrder(order_id string, orderUpdates interface{}) error {
-	// order, _ := ur.OrderSummery(order_id)
-	// for i := range order {
-
+func (ur *UserRepo) UpdateOrder(order_id, product_id string, orderUpdates interface{}) error {
+	// order := domain.Order{}
+	// result := ur.DB.Where(domain.Order{Order_ID: order_id, Product_ID: product_id}).First(&order)
+	// if result.Error != nil {
+	// 	return result.Error
 	// }
-	return fmt.Errorf("odfjla")
+	return nil
 }

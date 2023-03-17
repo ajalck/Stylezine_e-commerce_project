@@ -29,7 +29,7 @@ type UserUseCase interface {
 	//order
 	CheckOut(cart_id string, user_id, product_id, address_id int) (string, error)
 	OrderSummery(order_id string) ([]domain.OrderSummery, error)
-	UpdateOrder(orders_id string, orderUpdates interface{}) error
+	UpdateOrder(orders_id, product_id string, orderUpdates interface{}) error
 }
 type UserAuth interface {
 	VerifyUser(c *gin.Context, email string, password, userRole string) (bool, error)

@@ -498,7 +498,8 @@ func (uh *UserHandler) UpdateOrder(c *gin.Context) {
 		utils.ResponseJSON(c, response)
 	}
 	order_id := c.Query("order_id")
-	err := uh.userUseCase.UpdateOrder(order_id, updates)
+	product_id := c.Query("product_id")
+	err := uh.userUseCase.UpdateOrder(order_id, product_id, updates)
 	if err != nil {
 
 		return

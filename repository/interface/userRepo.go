@@ -32,5 +32,5 @@ type UserRepository interface {
 	//Order
 	CheckOut(cart_id string, user_id, product_id, address_id int) (string, error)
 	OrderSummery(order_id string) ([]domain.OrderSummery, error)
-	UpdateOrder(order_id string, orderUpdates interface{}) error
+	UpdateOrder(order_id, product_id string, orderUpdates interface{}) error
 }
