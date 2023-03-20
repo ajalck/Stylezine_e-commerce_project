@@ -5,9 +5,9 @@ import (
 	repoInt "ajalck/e_commerce/repository/interface"
 	"ajalck/e_commerce/utils"
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -18,12 +18,15 @@ type AdminRepo struct {
 func NewAdminRepository(DB *gorm.DB) repoInt.AdminRepository {
 	return &AdminRepo{DB: DB}
 }
-func (ar *AdminRepo) CreateAdmin(c *gin.Context, newAdmin domain.User) error {
+func (ar *AdminRepo) CreateAdmin(newAdmin domain.User) error {
 
-	err := ar.DB.Create(&newAdmin).Error
-	return err
+	err := ar.DB.Create(&newAdmin)
+	if err.Error != nil {
+		return err.Error
+	}
+	return nil
 }
-func (ar *AdminRepo) FindAdmin(c *gin.Context, email string, userRole string) (domain.User, error) {
+func (ar *AdminRepo) FindAdmin(email string, userRole string) (domain.User, error) {
 
 	var admin domain.User
 	// user := ar.DB.First(&admin, "Email=?", email)
@@ -33,7 +36,7 @@ func (ar *AdminRepo) FindAdmin(c *gin.Context, email string, userRole string) (d
 	user := ar.DB.Where(&domain.User{Email: email, User_Role: userRole}).First(&admin)
 
 	if user.Error != nil {
-		return admin, errors.New("could'nt find user")
+		return admin, errors.New("could'nt find admin")
 	}
 	return admin, nil
 }
@@ -52,30 +55,32 @@ func (ar *AdminRepo) ListUsers(page, perPage int) ([]domain.UserResponse, utils.
 		return Users, metaData, err
 	}
 
-	result := ar.DB.Model(&domain.User{}).Select("id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where("user_role", "user").Offset(offset).Limit(perPage).Find(&Users)
+	result := ar.DB.Model(&domain.User{}).Select("user_id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where("user_role", "user").Offset(offset).Limit(perPage).Find(&Users)
 	is := errors.Is(result.Error, gorm.ErrRecordNotFound)
 	if is == true {
 		return Users, metaData, errors.New("Record not found")
 	}
 	return Users, metaData, nil
 }
-func (ar *AdminRepo) ViewUser(id int) (domain.UserResponse, error) {
+func (ar *AdminRepo) ViewUser(id string) (domain.UserResponse, error) {
 
 	User := domain.UserResponse{}
-	ar.DB.Table("users").Select("id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where("id=?", id).Where("user_role", "user").Find(&User)
-	if User.ID == 0 {
+	ar.DB.Table("users").Select("id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where("user_id=?", id).Where("user_role", "user").Find(&User)
+	if User.ID == "" {
 		err := errors.New("no user found")
 		return User, err
 	}
 	return User, nil
 }
-func (ar *AdminRepo) BlockUser(id int) {
+func (ar *AdminRepo) BlockUser(id string) {
 	var user domain.User
-	ar.DB.Raw("UPDATE users SET status=$1 WHERE id=$2;", "blocked", id).Scan(&user)
+	ar.DB.Raw("UPDATE users SET status=$1 WHERE user_id=$2;", "blocked", id).Scan(&user)
+
 }
-func (ar *AdminRepo) UnblockUser(id int) {
+func (ar *AdminRepo) UnblockUser(id string) {
 	var user domain.User
-	ar.DB.Raw("UPDATE users SET status=$1 WHERE id=$2;", "active", id).Scan(&user)
+	ar.DB.Raw("UPDATE users SET status=$1 WHERE user_id=$2;", "active", id).Scan(&user)
+
 }
 func (ar *AdminRepo) ListBlockedUsers(page, perPage int) ([]domain.UserResponse, utils.MetaData, error) {
 
@@ -130,12 +135,25 @@ func (ar *AdminRepo) ViewCategory(category domain.Category) (domain.Category, er
 
 func (ar *AdminRepo) AddCategory(category domain.Category) error {
 
+	result := ar.DB.Where("category_name", category.Category_name).First(&domain.Category{})
+	if result.Error == nil {
+		return errors.New("A Category already exists on the same name")
+	}
 	var category_id int
 	if err := ar.DB.Raw("INSERT INTO categories (category_name) VALUES ($1) RETURNING category_id;", category.Category_name).Scan(&category_id).Error; err != nil {
 		return err
 	}
 	return nil
 
+}
+func (ar *AdminRepo) ListCategory() ([]domain.Category, error) {
+
+	var categories []domain.Category
+	dbResult := ar.DB.Find(&categories)
+	if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
+		return categories, dbResult.Error
+	}
+	return categories, nil
 }
 func (ar *AdminRepo) EditCategory(category domain.Category) error {
 
@@ -169,10 +187,23 @@ func (ar *AdminRepo) ViewBrand(brand_id uint) (domain.Brand, error) {
 
 func (ar *AdminRepo) AddBrand(brand domain.Brand) error {
 
+	result := ar.DB.Where("brand_name", brand.Brand_Name).First(&domain.Brand{})
+	if result.Error == nil {
+		return errors.New("A Brand already exists on the same name")
+	}
 	if err := ar.DB.Raw("INSERT INTO brands (brand_name,brand_discription) VALUES ($1,$2);", brand.Brand_Name, brand.Brand_Discription).Scan(&brand).Error; err != nil {
 		return err
 	}
 	return nil
+}
+func (ar *AdminRepo) ListBrands() ([]domain.Brand, error) {
+
+	var brands []domain.Brand
+	dbResult := ar.DB.Find(&brands)
+	if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
+		return brands, dbResult.Error
+	}
+	return brands, nil
 }
 func (ar *AdminRepo) EditBrand(brand domain.Brand) error {
 
@@ -194,11 +225,12 @@ func (ar *AdminRepo) DeleteBrand(brand domain.Brand) error {
 
 func (ar *AdminRepo) AddProducts(products domain.Products) (string, error) {
 	product := domain.Products{}
-	results := ar.DB.Where(&domain.Products{Product_Name: products.Product_Name,
-		Category_id: products.Category_id,
-		Brand_id:    products.Brand_id,
-		Size:        products.Size,
-		Color:       products.Color}).First(&product)
+	results := ar.DB.Where(&domain.Products{
+		Product_Name: products.Product_Name,
+		Category_id:  products.Category_id,
+		Brand_id:     products.Brand_id,
+		Size:         products.Size,
+		Color:        products.Color}).First(&product)
 	if results.Error != nil {
 		if err := ar.DB.Raw("INSERT INTO products (product_code,item,product_name,discription,product_image,category_id,brand_id,size,color,unit_price,stock,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)RETURNING product_code ;",
 			utils.GenerateID(), products.Item, products.Product_Name, products.Discription, products.Product_Image, products.Category_id, products.Brand_id, products.Size, products.Color, products.Unit_Price, products.Stock, products.Status).Scan(&products).Error; err != nil {
@@ -206,24 +238,57 @@ func (ar *AdminRepo) AddProducts(products domain.Products) (string, error) {
 		}
 		return products.Product_Code, nil
 	}
-	err := ar.DB.Model(&domain.Products{}).Where("product_code", product.Product_Code).Update("stock", (product.Stock + 1))
+	err := ar.DB.Model(&domain.Products{}).Where("product_code", product.Product_Code).Update("stock", (*product.Stock + 1))
 	if err.Error != nil {
 		return "", err.Error
 	}
 	return product.Product_Code, nil
 }
-func (ar *AdminRepo) EditProducts(product domain.Products) error {
+func (ar *AdminRepo) ListProducts(page, perPage int) ([]domain.ProductResponse, utils.MetaData, error) {
+	var Products []domain.ProductResponse
+	var totalRecords int64
 
-	if err := ar.DB.Raw("UPDATE products SET (product_image,UPPER(size),UPPER(color),unit_price,stock)=($1,$2,$3,$4,$5) WHERE brand_id=$6;",
-		product.Product_Image, product.Size, product.Color, product.Unit_Price, product.Stock, product.ID).Scan(&product).Error; err != nil {
-		return err
+	ar.DB.Model(&domain.Products{}).Count(&totalRecords)
+	metaData, offset, err := utils.ComputeMetaData(page, perPage, int(totalRecords))
+
+	if err != nil {
+		return Products, metaData, err
+	}
+
+	result := ar.DB.Model(&domain.Products{}).Select("id", "item", "product_name", "discription", "product_image", "category_name", "brand_name", "size", "color", "unit_price", "stock", "rating").
+		Joins("inner join categories on products.category_id=categories.category_id").
+		Joins("inner join brands on products.brand_id=brands.brand_id").Offset(offset).Limit(perPage).Find(&Products)
+	is := errors.Is(result.Error, gorm.ErrRecordNotFound)
+	if is == true {
+		return Products, metaData, errors.New("Record not found")
+	}
+	return Products, metaData, nil
+
+}
+func (ar *AdminRepo) EditProducts(product domain.Products) error {
+	P := &domain.Products{}
+	results := ar.DB.Where("product_code", product.Product_Code).First(&P)
+	if results.Error != nil {
+		return results.Error
+	}
+
+	results = ar.DB.Model(&domain.Products{}).Where("product_code", product.Product_Code).
+		Updates(map[string]interface{}{
+			"product_image": gorm.Expr("COALESCE(?, products.product_name)", product.Product_Image),
+			"size":          gorm.Expr("COALESCE(?, products.size)", product.Size),
+			"color":         gorm.Expr("COALESCE(?, products.color)", product.Color),
+			"unit_price":    gorm.Expr("COALESCE(?, products.unit_price)", product.Unit_Price),
+			"stock":         gorm.Expr("COALESCE(?, products.stock)", product.Stock),
+		})
+	if results.Error != nil {
+		return results.Error
 	}
 	return nil
 
 }
-func (ar *AdminRepo) DeleteProducts(product domain.Products) error {
+func (ar *AdminRepo) DeleteProducts(product_id string) error {
 
-	if err := ar.DB.Raw("DELETE FROM products WHERE id=$1;", product.ID).Scan(&product).Error; err != nil {
+	if err := ar.DB.Raw("DELETE FROM products WHERE product_code=$1;", product_id).Scan(&domain.Products{}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -234,6 +299,7 @@ func (ar *AdminRepo) AddCoupon(coupon domain.Coupon) error {
 	}
 	expiresAt := coupon.Expires_At
 	duration := time.Until(expiresAt)
+	fmt.Println(duration)
 	if duration < 0 {
 		coupon.Coupon_Status = "expired"
 	} else {
@@ -269,11 +335,11 @@ func (ar *AdminRepo) ListCoupon(page, perPage int) ([]domain.CouponResponse, uti
 	}
 	return coupons, metaData, nil
 }
-func (ar *AdminRepo) DeleteCoupon(coupon_id int) error {
+func (ar *AdminRepo) DeleteCoupon(coupon_id string) error {
 	coupon := &domain.Coupon{}
-	result := ar.DB.Where("id", coupon_id).First(&coupon)
+	result := ar.DB.Where("coupon_code", coupon_id).First(&coupon)
 	if result.Error == nil {
-		result := ar.DB.Where("id", coupon_id).Unscoped().Delete(&coupon)
+		result := ar.DB.Where("coupon_code", coupon_id).Unscoped().Delete(&coupon)
 		if result.Error != nil {
 			return result.Error
 		}

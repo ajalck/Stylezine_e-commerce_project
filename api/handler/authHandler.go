@@ -3,8 +3,8 @@ package handler
 import (
 	"ajalck/e_commerce/domain"
 	services "ajalck/e_commerce/usecase/interface"
+	"ajalck/e_commerce/utils"
 	_ "ajalck/e_commerce/utils"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -38,59 +38,89 @@ func NewAdminAuthHandler(
 	}
 }
 
+type Signin struct {
+	Username string `json:"username" gorm:"not null" binding:"required,email"`
+	Password string `json:"password" gorm:"not null" binding:"required,min=6"`
+}
+
 // @Summary user signin
 // @ID user signin
-// @Tags User Authentication
-// @Param userLogin body domain.User{} true "user Login"
+// @Tags 11.User Authentication
+// @Param userLogin body Signin{} true "user Login"
 // @Produce json
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
 // @Router /user/login [post]
 func (uh *UserAuthHandler) UserSignin(c *gin.Context) {
-	var userLogin domain.User
-	if err := c.Bind(&userLogin); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid login inputs"})
+	data := &Signin{}
+	if err := c.Bind(&data); err != nil {
+		response := utils.ErrorResponse("Invalid inputs!", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusExpectationFailed)
+		utils.ResponseJSON(c, response)
 		return
 	}
-	userLogin.User_Role = "user"
-	isVerified, _ := uh.userAuth.VerifyUser(c, userLogin.Email, userLogin.Password, userLogin.User_Role)
+	userLogin := &domain.User{
+		Email:     data.Username,
+		Password:  data.Password,
+		User_Role: "user",
+	}
+	isVerified, _ := uh.userAuth.VerifyUser(userLogin.Email, userLogin.Password, userLogin.User_Role)
 	if !isVerified {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid inputs"})
+		response := utils.ErrorResponse("Invalid inputs!", "", nil)
+		c.Writer.WriteHeader(http.StatusExpectationFailed)
+		utils.ResponseJSON(c, response)
 	} else {
-		user, _ := uh.userAuth.FindUser(c, userLogin.Email, userLogin.User_Role)
+		user, _ := uh.userAuth.FindUser(userLogin.Email, userLogin.User_Role)
 
-		signedToken := uh.jwtService.GenerateToken(int(user.ID), user.Email, "user")
+		signedToken := uh.jwtService.GenerateToken(user.User_ID, user.Email, "user")
 
 		user.Password = ""
 
 		c.Writer.Header().Set("Content-Type", "application/json")
 		c.Writer.Header().Set("Token", signedToken)
+		response := utils.SuccessResponse("Logged in successfully", nil)
 		c.Writer.WriteHeader(http.StatusOK)
+		utils.ResponseJSON(c, response)
 	}
 }
 
 // @Summary admin signin
 // @ID admin signin
-// @Tags admin Authentication
+// @Tags 2.admin Authentication
 // @Produce json
+// @Param adminLogin body Signin{} true "admin login"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
 // @Router /admin/registration/login [post]
 func (ah *AdminAuthHandler) AdminSignin(c *gin.Context) {
-	var adminLogin domain.User
-	if err := c.Bind(&adminLogin); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid login inputs"})
+	data := &Signin{}
+	if err := c.Bind(&data); err != nil {
+		response := utils.ErrorResponse("Invalid inputs!", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusExpectationFailed)
+		utils.ResponseJSON(c, response)
 		return
 	}
-	adminLogin.User_Role = "admin"
-	isVerified, _ := ah.adminAuth.VerifyAdmin(c, adminLogin.Email, adminLogin.Password, adminLogin.User_Role)
+	adminLogin := &domain.User{
+		Email:     data.Username,
+		Password:  data.Password,
+		User_Role: "admin",
+	}
+	isVerified, _ := ah.adminAuth.VerifyAdmin(adminLogin.Email, adminLogin.Password, adminLogin.User_Role)
 	if !isVerified {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid inputs"})
+		response := utils.ErrorResponse("Invalid inputs!", "", nil)
+		c.Writer.WriteHeader(http.StatusExpectationFailed)
+		utils.ResponseJSON(c, response)
 	} else {
-		admin := adminLogin
+		admin, _ := ah.adminAuth.FindAdmin(adminLogin.Email, adminLogin.User_Role)
 
-		signedToken := ah.jwtService.GenerateToken(int(admin.ID), admin.Email, "user")
+		signedToken := ah.jwtService.GenerateToken(admin.User_ID, admin.Email, "admin")
 
-		fmt.Print("\n\n", "signed token:", signedToken, "\n\n")
+		admin.Password = ""
+
+		c.Writer.Header().Set("Content-Type", "application/json")
+		c.Writer.Header().Set("Token", signedToken)
+		response := utils.SuccessResponse("Logged in successfully", nil)
+		c.Writer.WriteHeader(http.StatusOK)
+		utils.ResponseJSON(c, response)
 	}
 }

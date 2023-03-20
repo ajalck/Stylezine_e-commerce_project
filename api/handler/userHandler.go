@@ -19,6 +19,17 @@ func NewUserHandler(userUseCase services.UserUseCase) *UserHandler {
 	return &UserHandler{userUseCase: userUseCase}
 }
 
+type NewUser struct {
+	First_Name       string `json:"first_name" gorm:"not null" binding:"required,min=3"`
+	Last_Name        string `json:"last_name"`
+	Photo            string `json:"photo"`
+	Email            string `json:"email" gorm:"not null" binding:"required,email"`
+	Gender           string `json:"gender"`
+	Phone            string `json:"phone" gorm:"not null" binding:"required,numeric,len=10"`
+	Password         string `json:"password" gorm:"not null" binding:"required,min=6"`
+	Conform_Password string `json:"conform_password" gorm:"not null" binding:"required,min=6"`
+}
+
 // @title Go + Gin Stylezine API
 // @version 1.0
 // @description This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/ajalck/Stylezine_e-commerce_project
@@ -39,27 +50,40 @@ func NewUserHandler(userUseCase services.UserUseCase) *UserHandler {
 
 // @Summary Add user to database
 // @ID create user
-// @Tags User SignUP
+// @Tags 10.User Registration
 // @Produce json
-// @Param newUser body domain.User{} true "New User"
+// @Param newUser body NewUser{} true "New User"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
 // @Router /user/signup [post]
 func (uh *UserHandler) CreateUser(c *gin.Context) {
-	var newUser domain.User
-	if err := c.Bind(&newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
+	data := NewUser{}
+	if err := c.Bind(&data); err != nil || data.Password != data.Conform_Password {
+		response := utils.ErrorResponse("Invalid inputs or missmatch in password !", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusExpectationFailed)
+		utils.ResponseJSON(c, response)
 		return
 	}
-
-	err := uh.userUseCase.CreateUser(c, newUser)
-
+	newUser := domain.User{
+		First_Name: data.First_Name,
+		Last_Name:  data.Last_Name,
+		Photo:      data.Photo,
+		Email:      data.Email,
+		Gender:     data.Gender,
+		Phone:      data.Phone,
+		Password:   data.Password,
+	}
+	err := uh.userUseCase.CreateUser(newUser)
 	if err != nil {
-
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response := utils.ErrorResponse("Couldnlt register a new user !", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		utils.ResponseJSON(c, response)
 		return
 	} else {
-		c.JSON(http.StatusFound, gin.H{"message": "New user created successfully"})
+		response := utils.SuccessResponse("New user registered successfully", nil)
+		c.Writer.WriteHeader(http.StatusOK)
+		utils.ResponseJSON(c, response)
 	}
 }
 

@@ -4,13 +4,14 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	User_ID    string `json:"user_id"`
-	First_Name string `json:"first_name"`
+	User_ID    string `json:"user_id" gorm:"unique"`
+	First_Name string `json:"first_name" gorm:"not null" binding:"required,min=3"`
 	Last_Name  string `json:"last_name"`
-	Email      string `json:"email"`
+	Photo      string `json:"photo"`
+	Email      string `json:"email" gorm:"not null" binding:"required,email"`
 	Gender     string `json:"gender"`
-	Phone      string `json:"phone"`
-	Password   string `json:"password"`
+	Phone      string `json:"phone" gorm:"not null" binding:"required,numeric,len=10"`
+	Password   string `json:"password" gorm:"not null" binding:"required,min=6"`
 	Status     string `json:"status"`
 	User_Role  string `json:"user_role"`
 	Level      string `json:"level"`

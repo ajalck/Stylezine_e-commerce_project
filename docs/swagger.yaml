@@ -1,4 +1,20 @@
 definitions:
+  domain.Brand:
+    properties:
+      brand_discription:
+        type: string
+      brand_id:
+        type: integer
+      brand_name:
+        type: string
+    type: object
+  domain.Category:
+    properties:
+      category_id:
+        type: integer
+      category_name:
+        type: string
+    type: object
   domain.ShippingDetails:
     properties:
       address:
@@ -34,35 +50,6 @@ definitions:
     - phone
     - pin_code
     type: object
-  domain.User:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      email:
-        type: string
-      first_name:
-        type: string
-      gender:
-        type: string
-      id:
-        type: integer
-      last_name:
-        type: string
-      level:
-        type: string
-      password:
-        type: string
-      phone:
-        type: string
-      status:
-        type: string
-      updatedAt:
-        type: string
-      user_role:
-        type: string
-    type: object
   gorm.DeletedAt:
     properties:
       time:
@@ -70,6 +57,126 @@ definitions:
       valid:
         description: Valid is true if Time is not NULL
         type: boolean
+    type: object
+  handler.AddCoupon:
+    properties:
+      coupon_code:
+        type: string
+      discount_amount:
+        type: number
+      min_cost:
+        type: number
+      product_id:
+        type: integer
+      user_id:
+        type: integer
+      validity:
+        type: integer
+    type: object
+  handler.NewAdmin:
+    properties:
+      conform_password:
+        minLength: 6
+        type: string
+      email:
+        type: string
+      first_name:
+        minLength: 3
+        type: string
+      gender:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phone:
+        type: string
+      photo:
+        type: string
+    required:
+    - conform_password
+    - email
+    - first_name
+    - password
+    - phone
+    type: object
+  handler.NewProduct:
+    properties:
+      brand_id:
+        type: integer
+      category_id:
+        type: integer
+      color:
+        type: string
+      discription:
+        type: string
+      item:
+        type: string
+      product_image:
+        type: string
+      product_name:
+        type: string
+      size:
+        type: string
+      stock:
+        type: integer
+      unit_price:
+        type: number
+    type: object
+  handler.NewUser:
+    properties:
+      conform_password:
+        minLength: 6
+        type: string
+      email:
+        type: string
+      first_name:
+        minLength: 3
+        type: string
+      gender:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phone:
+        type: string
+      photo:
+        type: string
+    required:
+    - conform_password
+    - email
+    - first_name
+    - password
+    - phone
+    type: object
+  handler.Signin:
+    properties:
+      password:
+        minLength: 6
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handler.UpdateProduct:
+    properties:
+      color:
+        type: string
+      product_code:
+        type: string
+      product_image:
+        type: string
+      size:
+        type: string
+      stock:
+        type: integer
+      unit_price:
+        type: number
     type: object
   utils.Response:
     properties:
@@ -93,9 +200,368 @@ info:
   title: Go + Gin Stylezine API
   version: "1.0"
 paths:
+  /admin/brandManagement/add:
+    post:
+      operationId: add brands
+      parameters:
+      - description: Add Brand
+        in: body
+        name: newBrand
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Brand'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Add Brands
+      tags:
+      - 5.Brand Management
+  /admin/brandManagement/delete:
+    delete:
+      operationId: delete brands
+      parameters:
+      - description: Delete Brand
+        in: body
+        name: Brand
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Brand'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Delete Brand
+      tags:
+      - 5.Brand Management
+  /admin/brandManagement/edit:
+    patch:
+      operationId: update brands
+      parameters:
+      - description: Update Brand
+        in: body
+        name: newBrand
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Brand'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Update Brand
+      tags:
+      - 5.Brand Management
+  /admin/brandManagement/list:
+    get:
+      operationId: list brands
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: List Brands
+      tags:
+      - 5.Brand Management
+  /admin/categoryManagement/add:
+    post:
+      operationId: add categories
+      parameters:
+      - description: Add Category
+        in: body
+        name: newCateogory
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Add Categories
+      tags:
+      - 4.Category Management
+  /admin/categoryManagement/edit:
+    delete:
+      operationId: delete categories
+      parameters:
+      - description: Delete Category
+        in: body
+        name: Cateogory
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Delete Categories
+      tags:
+      - 4.Category Management
+    patch:
+      operationId: update categories
+      parameters:
+      - description: update Category
+        in: body
+        name: newCateogory
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Update Categories
+      tags:
+      - 4.Category Management
+  /admin/categoryManagement/list:
+    get:
+      operationId: list categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: list Categories
+      tags:
+      - 4.Category Management
+  /admin/coupon/add:
+    post:
+      operationId: add coupons
+      parameters:
+      - description: Add Coupon
+        in: body
+        name: Coupon
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddCoupon'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Add Coupons
+      tags:
+      - 7.Coupon Management
+  /admin/coupon/delete/:couponid:
+    delete:
+      operationId: delete coupons
+      parameters:
+      - description: Coupon_ID
+        in: query
+        name: coupon_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Delete Coupons
+      tags:
+      - 7.Coupon Management
+  /admin/coupon/list/:page/:records:
+    get:
+      operationId: list coupons on admin panel
+      parameters:
+      - description: Page No
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: No of records
+        in: query
+        name: records
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: List Coupons on admin panel
+      tags:
+      - 7.Coupon Management
+  /admin/productManagement/add:
+    post:
+      operationId: add products
+      parameters:
+      - description: Add Product
+        in: body
+        name: newProduct
+        required: true
+        schema:
+          $ref: '#/definitions/handler.NewProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Add Products
+      tags:
+      - 6.Product Management
+  /admin/productManagement/delete:
+    delete:
+      operationId: delete products
+      parameters:
+      - description: Product_ID
+        in: body
+        name: Productid
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Delete Products
+      tags:
+      - 6.Product Management
+  /admin/productManagement/list/:page/:records:
+    get:
+      operationId: list products
+      parameters:
+      - description: Page No
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: No of records
+        in: query
+        name: records
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: List Products
+      tags:
+      - 6.Product Management
+  /admin/productManagement/update:
+    patch:
+      operationId: update products
+      parameters:
+      - description: Update Product
+        in: body
+        name: newProduct
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Update Products
+      tags:
+      - 6.Product Management
   /admin/registration/login:
     post:
       operationId: admin signin
+      parameters:
+      - description: admin login
+        in: body
+        name: adminLogin
+        required: true
+        schema:
+          $ref: '#/definitions/handler.Signin'
       produces:
       - application/json
       responses:
@@ -109,7 +575,184 @@ paths:
             $ref: '#/definitions/utils.Response'
       summary: admin signin
       tags:
-      - admin Authentication
+      - 2.admin Authentication
+  /admin/registration/signup:
+    post:
+      operationId: admin signup
+      parameters:
+      - description: Register Admin
+        in: body
+        name: newAdmin
+        required: true
+        schema:
+          $ref: '#/definitions/handler.NewAdmin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Admin Signup
+      tags:
+      - 1.Admin Registration
+  /admin/userManagement/blockuser/:id:
+    patch:
+      operationId: block user
+      parameters:
+      - description: User ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Block User
+      tags:
+      - 3.User Management
+  /admin/userManagement/list/activeusers/:page/:records:
+    get:
+      operationId: list active users
+      parameters:
+      - description: Page No
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: No of records
+        in: query
+        name: records
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: List Active users
+      tags:
+      - 3.User Management
+  /admin/userManagement/list/blockedusers/:page/:records:
+    get:
+      operationId: list blocked users
+      parameters:
+      - description: Page No
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: No of records
+        in: query
+        name: records
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: List Blocked users
+      tags:
+      - 3.User Management
+  /admin/userManagement/listusers/:page/:records:
+    get:
+      operationId: list users
+      parameters:
+      - description: Page No
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: No of records
+        in: query
+        name: records
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: List Users
+      tags:
+      - 3.User Management
+  /admin/userManagement/unblockuser/:id:
+    patch:
+      operationId: unblock user
+      parameters:
+      - description: User ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Unblock User
+      tags:
+      - 3.User Management
+  /admin/userManagement/viewuser/:id:
+    get:
+      operationId: view user
+      parameters:
+      - description: User ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: View User
+      tags:
+      - 3.User Management
   /user/cart/add/:productid:
     post:
       operationId: user add cart
@@ -322,7 +965,7 @@ paths:
         name: userLogin
         required: true
         schema:
-          $ref: '#/definitions/domain.User'
+          $ref: '#/definitions/handler.Signin'
       produces:
       - application/json
       responses:
@@ -336,7 +979,7 @@ paths:
             $ref: '#/definitions/utils.Response'
       summary: user signin
       tags:
-      - User Authentication
+      - 11.User Authentication
   /user/order/checkout/:cartid/:productid/:shippingid:
     post:
       operationId: user add to checkout
@@ -507,7 +1150,7 @@ paths:
         name: newUser
         required: true
         schema:
-          $ref: '#/definitions/domain.User'
+          $ref: '#/definitions/handler.NewUser'
       produces:
       - application/json
       responses:
@@ -521,7 +1164,7 @@ paths:
             $ref: '#/definitions/utils.Response'
       summary: Add user to database
       tags:
-      - User SignUP
+      - 10.User Registration
   /user/wishlist/add/:productid:
     post:
       operationId: user add wishlist

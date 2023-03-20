@@ -3,12 +3,10 @@ package interfaces
 import (
 	"ajalck/e_commerce/domain"
 	"ajalck/e_commerce/utils"
-
-	"github.com/gin-gonic/gin"
 )
 
 type UserUseCase interface {
-	CreateUser(c *gin.Context, newUser domain.User) error
+	CreateUser(newUser domain.User) error
 	ListProducts(page, perPage int) ([]domain.ProductResponse, utils.MetaData, error)
 	//Wishlist
 	AddWishlist(user_id, Product_id int) error
@@ -32,6 +30,6 @@ type UserUseCase interface {
 	UpdateOrder(orders_id, product_id string, orderUpdates interface{}) error
 }
 type UserAuth interface {
-	VerifyUser(c *gin.Context, email string, password, userRole string) (bool, error)
-	FindUser(c *gin.Context, email string, role string) (domain.User, error)
+	VerifyUser(email string, password, userRole string) (bool, error)
+	FindUser(email string, role string) (domain.User, error)
 }

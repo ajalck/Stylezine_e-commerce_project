@@ -7,9 +7,6 @@ import (
 	"ajalck/e_commerce/utils"
 	"errors"
 	"fmt"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 type adminUseCase struct {
@@ -21,21 +18,19 @@ func NewAdminUseCase(repo repoInt.AdminRepository) services.AdminUseCase {
 		adminRepo: repo,
 	}
 }
-func (au *adminUseCase) CreateAdmin(c *gin.Context, newAdmin domain.User) error {
+func (au *adminUseCase) CreateAdmin(newAdmin domain.User) error {
 
 	newAdmin.User_Role = "admin"
 
-	if _, err := au.adminRepo.FindAdmin(c, newAdmin.Email, newAdmin.User_Role); err == nil {
-
-		c.JSON(http.StatusBadGateway, gin.H{"message": "admin already exists"})
-		err := errors.New("admin already exists")
-		return err
+	if _, err := au.adminRepo.FindAdmin(newAdmin.Email, newAdmin.User_Role); err == nil {
+		return errors.New("Admin already exists")
 	}
 	//Hashing password
 
 	newAdmin.Password = HashPassword(newAdmin.Password)
-
-	err := au.adminRepo.CreateAdmin(c, newAdmin)
+	newAdmin.User_ID = utils.GenerateID()
+	newAdmin.Status = "active"
+	err := au.adminRepo.CreateAdmin(newAdmin)
 	if err != nil {
 		return err
 	}
@@ -53,7 +48,7 @@ func (au *adminUseCase) ListUsers(page, perPage int) ([]domain.UserResponse, uti
 	return users, metaData, nil
 
 }
-func (au *adminUseCase) ViewUser(id int) (domain.UserResponse, error) {
+func (au *adminUseCase) ViewUser(id string) (domain.UserResponse, error) {
 	user, err := au.adminRepo.ViewUser(id)
 	if err != nil {
 		return user, err
@@ -62,20 +57,19 @@ func (au *adminUseCase) ViewUser(id int) (domain.UserResponse, error) {
 
 }
 
-func (au *adminUseCase) BlockUser(id int) error {
+func (au *adminUseCase) BlockUser(id string) error {
 	user, err := au.adminRepo.ViewUser(id)
 	if err != nil {
 		return err
 	}
 	if user.Status == "blocked" {
 		err := errors.New("user is already blocked")
-		fmt.Println(err)
 		return err
 	}
 	au.adminRepo.BlockUser(id)
 	return nil
 }
-func (au *adminUseCase) UnblockUser(id int) error {
+func (au *adminUseCase) UnblockUser(id string) error {
 	user, err := au.adminRepo.ViewUser(id)
 	if err != nil {
 		return err
@@ -108,12 +102,20 @@ func (au *adminUseCase) ListActiveUsers(page, perPage int) ([]domain.UserRespons
 // Category Management
 
 func (au *adminUseCase) AddCategory(NewCategory domain.Category) error {
-
 	err := au.adminRepo.AddCategory(NewCategory)
 	if err != nil {
 		return err
 	}
 	return nil
+
+}
+func (au *adminUseCase) ListCategory() ([]domain.Category, error) {
+
+	categories, err := au.adminRepo.ListCategory()
+	if err != nil {
+		return nil, err
+	}
+	return categories, nil
 
 }
 func (au *adminUseCase) EditCategory(NewCategory domain.Category) error {
@@ -158,6 +160,15 @@ func (au *adminUseCase) AddBrand(NewBrand domain.Brand) error {
 	}
 	return nil
 }
+func (au *adminUseCase) ListBrands() ([]domain.Brand, error) {
+
+	brands, err := au.adminRepo.ListBrands()
+	if err != nil {
+		return nil, err
+	}
+	return brands, nil
+
+}
 func (au *adminUseCase) EditBrand(NewBrand domain.Brand) error {
 
 	brand, err := au.adminRepo.ViewBrand(NewBrand.Brand_ID)
@@ -200,6 +211,15 @@ func (au *adminUseCase) AddProducts(newProduct domain.Products) (string, error) 
 
 	return product_code, nil
 }
+func (au *adminUseCase) ListProducts(page, perPage int) ([]domain.ProductResponse, utils.MetaData, error) {
+
+	products, metaData, err := au.adminRepo.ListProducts(page, perPage)
+	if err != nil {
+		return nil, metaData, err
+	}
+
+	return products, metaData, err
+}
 func (au *adminUseCase) EditProducts(newProduct domain.Products) error {
 
 	err := au.adminRepo.EditProducts(newProduct)
@@ -209,9 +229,9 @@ func (au *adminUseCase) EditProducts(newProduct domain.Products) error {
 
 	return nil
 }
-func (au *adminUseCase) DeleteProducts(product domain.Products) error {
+func (au *adminUseCase) DeleteProducts(product_id string) error {
 
-	err := au.adminRepo.DeleteProducts(product)
+	err := au.adminRepo.DeleteProducts(product_id)
 	if err != nil {
 		return err
 	}
@@ -236,7 +256,7 @@ func (au *adminUseCase) ListCoupon(page, perPage int) ([]domain.CouponResponse, 
 	}
 	return coupons, metaData, nil
 }
-func (au *adminUseCase) DeleteCoupon(coupon_id int) error {
+func (au *adminUseCase) DeleteCoupon(coupon_id string) error {
 	err := au.adminRepo.DeleteCoupon(coupon_id)
 	if err != nil {
 		return err

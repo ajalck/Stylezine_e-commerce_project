@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gin-gonic/gin"
-
 	"gorm.io/gorm"
 )
 
@@ -20,16 +18,16 @@ type UserRepo struct {
 func NewUserRepository(DB *gorm.DB) repoInt.UserRepository {
 	return &UserRepo{DB: DB}
 }
-func (ur *UserRepo) CreateUser(c *gin.Context, newUser domain.User) error {
+func (ur *UserRepo) CreateUser(newUser domain.User) error {
 
 	user := ur.DB.Create(&newUser)
 	if user.Error != nil {
-		return errors.New("couldn't create a new user")
+		return user.Error
 	}
 	return nil
 
 }
-func (ur *UserRepo) FindUser(c *gin.Context, email string, userRole string) (domain.User, error) {
+func (ur *UserRepo) FindUser(email string, userRole string) (domain.User, error) {
 
 	var users domain.User
 	user := ur.DB.Where(&domain.User{Email: email, User_Role: userRole}).First(&users)
@@ -149,13 +147,13 @@ func (ur *UserRepo) AddCart(user_id, product_id int) (error, string) {
 		Product_ID:  product_id,
 		Coupon_id:   0,
 		Quantity:    1,
-		Unit_Price:  unit_price,
-		Total_Price: unit_price,
+		Unit_Price:  *unit_price,
+		Total_Price: *unit_price,
 	}
 	Cart, err := ur.CheckExistency(user_id, product_id)
 	if err == nil {
 		Cart.Quantity = Cart.Quantity + 1
-		Cart.Total_Price = float32(Cart.Quantity) * unit_price
+		Cart.Total_Price = float32(Cart.Quantity) * *unit_price
 		ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Quantity: Cart.Quantity, Total_Price: Cart.Total_Price})
 		return nil, Cart.Cart_ID
 	}
@@ -193,19 +191,6 @@ func (ur *UserRepo) ViewCart(user_id, page, perPage int) ([]domain.CartResponse,
 	fmt.Println(cart)
 	return cart, metaData, nil
 }
-func (ur *UserRepo) UpdateCoupon() error {
-	coupons := []domain.Coupon{}
-	ur.DB.Find(&coupons)
-	for i := range coupons {
-		if coupons[i].Expires_At.Compare(time.Now()) == -1 {
-			result := ur.DB.Table("coupons").Where("id", coupons[i].ID).Update("coupon_status", "expired")
-			if result.Error != nil {
-				return result.Error
-			}
-		}
-	}
-	return nil
-}
 func (ur *UserRepo) DeleteCart(user_id, product_id int) error {
 	cart := &domain.Cart{}
 	Cart, err := ur.CheckExistency(user_id, product_id)
@@ -226,7 +211,21 @@ func (ur *UserRepo) DeleteCart(user_id, product_id int) error {
 	return err
 }
 
-//Coupon
+// Coupon
+
+func (ur *UserRepo) UpdateCoupon() error {
+	coupons := []domain.Coupon{}
+	ur.DB.Find(&coupons)
+	for i := range coupons {
+		if coupons[i].Expires_At.Compare(time.Now()) == -1 {
+			result := ur.DB.Table("coupons").Where("id", coupons[i].ID).Update("coupon_status", "expired")
+			if result.Error != nil {
+				return result.Error
+			}
+		}
+	}
+	return nil
+}
 
 func (ur *UserRepo) ListCoupon(user_id, product_id int) ([]domain.CouponResponse, error) {
 	coupons := []domain.CouponResponse{}
@@ -458,7 +457,7 @@ func (ur *UserRepo) CheckOut(cart_id string, user_id, product_id, address_id int
 			Coupon_ID:      0,
 			Quantity:       1,
 			Discount:       0,
-			TotalPrice:     product.Unit_Price,
+			TotalPrice:     *product.Unit_Price,
 			Order_Status:   "pending",
 			Payment_Status: "pending",
 		})

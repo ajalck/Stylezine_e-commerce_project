@@ -7,7 +7,7 @@ import (
 )
 
 type UserResponse struct {
-	ID           int    `json:"id"`
+	ID           string `json:"id"`
 	First_Name   string `json:"first_name"`
 	Last_Name    string `json:"last_name"`
 	Email        string `json:"email"`
@@ -18,7 +18,7 @@ type UserResponse struct {
 	Verification bool   `json:"verification"`
 }
 type ProductResponse struct {
-	ID            int     `json:"id"`
+	ID            string  `json:"id"`
 	Item          string  `json:"item"`
 	Product_Name  string  `json:"product_name"`
 	Discription   string  `json:"discription"`
@@ -33,7 +33,7 @@ type ProductResponse struct {
 	Status        string  `json:"status"`
 }
 type SignedDetails struct {
-	UserId   int
+	UserId   string
 	Username string
 	UserRole string
 	jwt.StandardClaims

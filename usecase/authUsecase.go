@@ -4,9 +4,7 @@ import (
 	"ajalck/e_commerce/domain"
 	repoInt "ajalck/e_commerce/repository/interface"
 	services "ajalck/e_commerce/usecase/interface"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"errors"
 )
 
 type userAuthService struct {
@@ -24,15 +22,14 @@ func NewAdminAuthService(adminRepo repoInt.AdminRepository) services.AdminAuth {
 	return &adminAuthService{adminRepo: adminRepo}
 }
 
-func (ua *userAuthService) FindUser(c *gin.Context, email, role string) (domain.User, error) {
-	user, err := ua.userRepo.FindUser(c, email, role)
+func (ua *userAuthService) FindUser(email, role string) (domain.User, error) {
+	user, err := ua.userRepo.FindUser(email, role)
 	return user, err
 }
-func (ua *userAuthService) VerifyUser(c *gin.Context, email string, password string, userRole string) (bool, error) {
+func (ua *userAuthService) VerifyUser(email string, password string, userRole string) (bool, error) {
 
-	user, err := ua.userRepo.FindUser(c, email, userRole)
+	user, err := ua.userRepo.FindUser(email, userRole)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found ! Please check your credentials"})
 		return false, err
 	}
 	// 	fmt.Println("\n\n", user.Password, "\n\n", password, "\n\n")
@@ -52,25 +49,24 @@ func (ua *userAuthService) VerifyUser(c *gin.Context, email string, password str
 
 	hashedPassword := HashPassword(password)
 	if user.Password != hashedPassword {
-		c.JSON(400, "missmatch in passwords")
-		return false, nil
+		return false, errors.New("Password not verified")
 	}
-	// c.JSON(200, "Verified successfully")
 	return true, nil
 }
-func (aa *adminAuthService) VerifyAdmin(c *gin.Context, email, password, userRole string) (bool, error) {
+func (au *adminAuthService) FindAdmin(email, role string) (domain.User, error) {
+	admin, err := au.adminRepo.FindAdmin(email, role)
+	return admin, err
+}
+func (aa *adminAuthService) VerifyAdmin(email, password, userRole string) (bool, error) {
 
-	user, err := aa.adminRepo.FindAdmin(c, email, userRole)
+	user, err := aa.adminRepo.FindAdmin(email, userRole)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found ! Please check your credentials"})
 		return false, err
 	}
 
 	hashedPassword := HashPassword(password)
 	if user.Password != hashedPassword {
-		c.JSON(400, "missmatch in passwords")
-		return false, nil
+		return false, errors.New("Missmatch in passwords")
 	}
-	c.JSON(200, "Verified successfully")
 	return true, nil
 }

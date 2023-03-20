@@ -10,14 +10,14 @@ import (
 func UserServer(routes *gin.Engine,
 	userHandler handler.UserHandler,
 	userAuthHandler handler.UserAuthHandler,
-	userMiddleware middleware.UserMiddleware) {
+	Middleware middleware.Middleware) {
 	user := routes.Group("/user")
 	{
 		user.POST("/signup", userHandler.CreateUser)
 		user.POST("/login", userAuthHandler.UserSignin)
 		user.GET("/listproducts/:page/:records", userHandler.ListProducts)
 
-		user.Use(userMiddleware.AuthorizeJWT)
+		user.Use(Middleware.AuthorizeJWT)
 		{
 			wishlist := user.Group("/wishlist")
 			{
@@ -58,7 +58,8 @@ func UserServer(routes *gin.Engine,
 }
 func AdminServer(routes *gin.Engine,
 	adminHandler handler.AdminHandler,
-	adminAuthHandler handler.AdminAuthHandler) {
+	adminAuthHandler handler.AdminAuthHandler,
+	Middleware middleware.Middleware) {
 
 	admin := routes.Group("/admin")
 	{
@@ -67,43 +68,49 @@ func AdminServer(routes *gin.Engine,
 			registration.POST("/signup", adminHandler.CreateAdmin)
 			registration.POST("/login", adminAuthHandler.AdminSignin)
 		}
+		admin.Use(Middleware.AuthorizeJWT)
+		{
+			users := admin.Group("/userManagement")
+			{
+				users.GET("/listusers/:page/:records", adminHandler.ListUsers)
+				users.GET("/viewuser/:id", adminHandler.ViewUser)
+				users.PATCH("/blockuser/:id", adminHandler.BlockUser)
+				users.PATCH("/unblockuser/:id", adminHandler.UnblockUser)
+				users.GET("/list/blockedusers/:page/:records", adminHandler.ListBlockedUsers)
+				users.GET("/list/activeusers/:page/:records", adminHandler.ListActiveUsers)
+			}
 
-		users := admin.Group("/userManagement")
-		{
-			users.GET("/listusers/:page/:records", adminHandler.ListUsers)
-			users.GET("/viewuser/:id", adminHandler.ViewUser)
-			users.PATCH("/blockuser/:id", adminHandler.BlockUser)
-			users.PATCH("/unblockuser/:id", adminHandler.UnblockUser)
-			users.GET("/list/blockedusers/:page/:records", adminHandler.ListBlockedUsers)
-			users.GET("/list/activeusers/:page/:records", adminHandler.ListActiveUsers)
+			category := admin.Group("/categoryManagement")
+			{
+				category.POST("/add", adminHandler.AddCategory)
+				category.GET("/list", adminHandler.ListCategory)
+				category.PATCH("/edit", adminHandler.EditCategory)
+				category.DELETE("/delete", adminHandler.DeleteCategory)
+			}
+
+			brand := admin.Group("/brandManagement")
+			{
+				brand.POST("/add", adminHandler.AddBrand)
+				brand.GET("/list", adminHandler.ListBrands)
+				brand.PATCH("/edit", adminHandler.EditBrand)
+				brand.DELETE("/delete", adminHandler.DeleteBrand)
+			}
+
+			products := admin.Group("/productManagement")
+			{
+				products.POST("/add", adminHandler.AddProducts)
+				products.GET("/list/:page/:records", adminHandler.ListProducts)
+				products.PATCH("/edit", adminHandler.EditProducts)
+				products.DELETE("/delete", adminHandler.DeleteProducts)
+			}
+			coupon := admin.Group("/coupon")
+			{
+				coupon.POST("/add", adminHandler.AddCoupon)
+				coupon.GET("/list/:page/:records", adminHandler.ListCoupon)
+				coupon.DELETE("/delete/:couponid", adminHandler.DeleteCoupon)
+			}
 		}
 
-		category := admin.Group("/categoryManagement")
-		{
-			category.POST("/add", adminHandler.AddCategory)
-			category.PATCH("/edit", adminHandler.EditCategory)
-			category.DELETE("/delete", adminHandler.DeleteCategory)
-		}
-
-		brand := admin.Group("/brandManagement")
-		{
-			brand.POST("/add", adminHandler.AddBrand)
-			brand.PATCH("/edit", adminHandler.EditBrand)
-			brand.DELETE("/delete", adminHandler.DeleteBrand)
-		}
-
-		products := admin.Group("/productManagement")
-		{
-			products.POST("/add", adminHandler.AddProducts)
-			products.PATCH("/edit", adminHandler.EditProducts)
-			products.DELETE("/delete", adminHandler.DeleteProducts)
-		}
-		coupon := admin.Group("/coupon")
-		{
-			coupon.POST("/add", adminHandler.AddCoupon)
-			coupon.GET("/list/:page/:records", adminHandler.ListCoupon)
-			coupon.DELETE("/delete/:couponid", adminHandler.DeleteCoupon)
-		}
 	}
 
 }

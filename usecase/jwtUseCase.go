@@ -20,7 +20,7 @@ func NewJWTService() services.JwtServices {
 		SecretKey: os.Getenv("SECRET_KEY"),
 	}
 }
-func (j *jwtService) GenerateToken(userId int, email, role string) string {
+func (j *jwtService) GenerateToken(userId string, email, role string) string {
 
 	claims := &domain.SignedDetails{
 		UserId:   userId,
@@ -30,6 +30,7 @@ func (j *jwtService) GenerateToken(userId int, email, role string) string {
 			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
 		},
 	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString([]byte(j.SecretKey))
 

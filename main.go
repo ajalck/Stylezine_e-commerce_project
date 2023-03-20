@@ -20,8 +20,6 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-
-
 func init() {
 	err := godotenv.Load()
 	if err != nil {
@@ -39,14 +37,14 @@ func main() {
 	config.SyncDB(db)
 
 	var (
-		userRepo        repoInt.UserRepository    = repository.NewUserRepository(db)
-		userUseCase     services.UserUseCase      = usecase.NewUserUseCase(userRepo)
-		userHandler     *handler.UserHandler      = handler.NewUserHandler(userUseCase)
-		userAuth        services.UserAuth         = usecase.NewUserAuthService(userRepo)
-		jwtService      services.JwtServices      = usecase.NewJWTService()
-		userAuthHandler *handler.UserAuthHandler  = handler.NewUserAuthHandler(userAuth, jwtService)
-		userMiddleware  middleware.UserMiddleware = middleware.NewUserMiddleware(jwtService)
+		userRepo        repoInt.UserRepository   = repository.NewUserRepository(db)
+		userUseCase     services.UserUseCase     = usecase.NewUserUseCase(userRepo)
+		userHandler     *handler.UserHandler     = handler.NewUserHandler(userUseCase)
+		userAuth        services.UserAuth        = usecase.NewUserAuthService(userRepo)
+		jwtService      services.JwtServices     = usecase.NewJWTService()
+		userAuthHandler *handler.UserAuthHandler = handler.NewUserAuthHandler(userAuth, jwtService)
 	)
+	var middleware middleware.Middleware = middleware.NewMiddleware(jwtService)
 	var (
 		adminRepo        repoInt.AdminRepository   = repository.NewAdminRepository(db)
 		adminUseCase     services.AdminUseCase     = usecase.NewAdminUseCase(adminRepo)
@@ -55,7 +53,7 @@ func main() {
 		adminAuthHandler *handler.AdminAuthHandler = handler.NewAdminAuthHandler(adminAuth, jwtService)
 	)
 	//routing
-	servers.UserServer(router, *userHandler, *userAuthHandler, userMiddleware)
-	servers.AdminServer(router, *adminHandler, *adminAuthHandler)
+	servers.UserServer(router, *userHandler, *userAuthHandler, middleware)
+	servers.AdminServer(router, *adminHandler, *adminAuthHandler, middleware)
 	router.Run(":" + port)
 }

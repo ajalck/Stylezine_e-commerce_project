@@ -8,9 +8,6 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 type userUseCase struct {
@@ -22,26 +19,23 @@ func NewUserUseCase(repo repoInt.UserRepository) services.UserUseCase {
 		userRepo: repo,
 	}
 }
-func (uc *userUseCase) CreateUser(c *gin.Context, newUser domain.User) error {
+func (uc *userUseCase) CreateUser(newUser domain.User) error {
 
 	newUser.User_Role = "user"
 
-	if _, err := uc.userRepo.FindUser(c, newUser.Email, newUser.User_Role); err == nil {
+	if _, err := uc.userRepo.FindUser(newUser.Email, newUser.User_Role); err == nil {
 
-		c.JSON(http.StatusBadGateway, gin.H{"message": "User Already exists"})
-		err = errors.New("user already exists")
-		return err
-
+		return errors.New("user already exists")
 	}
 
 	//hashing password
 
 	newUser.Password = HashPassword(newUser.Password)
+	newUser.User_ID = utils.GenerateID()
 	newUser.Status = "active"
 	newUser.Level = "bronze"
-	err := uc.userRepo.CreateUser(c, newUser)
+	err := uc.userRepo.CreateUser(newUser)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "couldn't create a user"})
 		return err
 	}
 	return nil

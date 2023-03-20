@@ -8,11 +8,11 @@ import (
 
 type Products struct {
 	gorm.Model
-	Product_Code  string   `json:"product_code"`
-	Item          string   `json:"item"`
-	Product_Name  string   `json:"product_name"`
-	Discription   string   `json:"discription"`
-	Product_Image string   `json:"product_image"`
+	Product_Code  string   `json:"product_code" gorm:"not null"`
+	Item          string   `json:"item" gorm:"not null"`
+	Product_Name  string   `json:"product_name" gorm:"not null;unique"`
+	Discription   string   `json:"discription" gorm:"not null"`
+	Product_Image *string  `json:"product_image"`
 	Category_id   uint     `json:"category_id" gorm:"not null"`
 	Category      Category `json:"-" gorm:"foreignkey:Category_id;references:Category_ID"`
 	Brand_id      uint     `json:"brand_id" gorm:"not null"`
@@ -21,10 +21,10 @@ type Products struct {
 	WishList      WishList `json:"-" gorm:"foreignkey:Wishlist_id;references:Wishlist_ID"`
 	Cart_id       uint     `json:"cart_id"`
 	Cart          Cart     `json:"-" gorm:"foreignkey:Cart_id;references:ID"`
-	Size          string   `json:"size" gorm:"not null"`
-	Color         string   `json:"color" gorm:"not null"`
-	Unit_Price    float32  `json:"unit_price"`
-	Stock         uint     `json:"stock"`
+	Size          *string  `json:"size"`
+	Color         *string  `json:"color"`
+	Unit_Price    *float32 `json:"unit_price"`
+	Stock         *uint    `json:"stock"`
 	Rating        float32  `json:"rating"`
 	Status        string   `json:"status"`
 }
