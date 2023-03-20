@@ -188,17 +188,7 @@ definitions:
         type: boolean
     type: object
 info:
-  contact:
-    email: ack6627@gmail.com
-    name: API Support
-    url: https://github.com/ajalck/ajal_portfolio
-  description: This is a sample server Job Portal server. You can visit the GitHub
-    repository at https://github.com/ajalck/Stylezine_e-commerce_project
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
-  title: Go + Gin Stylezine API
-  version: "1.0"
+  contact: {}
 paths:
   /admin/brandManagement/add:
     post:
@@ -221,6 +211,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Add Brands
       tags:
       - 5.Brand Management
@@ -245,6 +237,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Delete Brand
       tags:
       - 5.Brand Management
@@ -269,6 +263,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Update Brand
       tags:
       - 5.Brand Management
@@ -286,6 +282,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: List Brands
       tags:
       - 5.Brand Management
@@ -310,6 +308,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Add Categories
       tags:
       - 4.Category Management
@@ -334,6 +334,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Delete Categories
       tags:
       - 4.Category Management
@@ -357,6 +359,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Update Categories
       tags:
       - 4.Category Management
@@ -374,6 +378,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: list Categories
       tags:
       - 4.Category Management
@@ -398,6 +404,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Add Coupons
       tags:
       - 7.Coupon Management
@@ -421,6 +429,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Delete Coupons
       tags:
       - 7.Coupon Management
@@ -449,6 +459,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: List Coupons on admin panel
       tags:
       - 7.Coupon Management
@@ -473,6 +485,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Add Products
       tags:
       - 6.Product Management
@@ -497,6 +511,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Delete Products
       tags:
       - 6.Product Management
@@ -525,6 +541,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: List Products
       tags:
       - 6.Product Management
@@ -549,6 +567,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Update Products
       tags:
       - 6.Product Management
@@ -620,6 +640,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Block User
       tags:
       - 3.User Management
@@ -648,6 +670,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: List Active users
       tags:
       - 3.User Management
@@ -676,6 +700,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: List Blocked users
       tags:
       - 3.User Management
@@ -704,6 +730,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: List Users
       tags:
       - 3.User Management
@@ -727,6 +755,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: Unblock User
       tags:
       - 3.User Management
@@ -750,6 +780,8 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
       summary: View User
       tags:
       - 3.User Management
@@ -1245,9 +1277,4 @@ paths:
       summary: View wishlist
       tags:
       - User Wishlist
-securityDefinitions:
-  BearerAuth:
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"
