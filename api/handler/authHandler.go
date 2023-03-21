@@ -54,7 +54,7 @@ type Signin struct {
 func (uh *UserAuthHandler) UserSignin(c *gin.Context) {
 	data := &Signin{}
 	if err := c.Bind(&data); err != nil {
-		response := utils.ErrorResponse("Invalid inputs!", err.Error(), nil)
+		response := utils.ErrorResponse("Authentication failed !", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusExpectationFailed)
 		utils.ResponseJSON(c, response)
 		return
@@ -66,7 +66,7 @@ func (uh *UserAuthHandler) UserSignin(c *gin.Context) {
 	}
 	isVerified, _ := uh.userAuth.VerifyUser(userLogin.Email, userLogin.Password, userLogin.User_Role)
 	if !isVerified {
-		response := utils.ErrorResponse("Invalid inputs!", "", nil)
+		response := utils.ErrorResponse("Authentication failed !", "", nil)
 		c.Writer.WriteHeader(http.StatusExpectationFailed)
 		utils.ResponseJSON(c, response)
 	} else {
@@ -95,7 +95,7 @@ func (uh *UserAuthHandler) UserSignin(c *gin.Context) {
 func (ah *AdminAuthHandler) AdminSignin(c *gin.Context) {
 	data := &Signin{}
 	if err := c.Bind(&data); err != nil {
-		response := utils.ErrorResponse("Invalid inputs!", err.Error(), nil)
+		response := utils.ErrorResponse("Authentication failed !", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusExpectationFailed)
 		utils.ResponseJSON(c, response)
 		return
@@ -107,7 +107,7 @@ func (ah *AdminAuthHandler) AdminSignin(c *gin.Context) {
 	}
 	isVerified, _ := ah.adminAuth.VerifyAdmin(adminLogin.Email, adminLogin.Password, adminLogin.User_Role)
 	if !isVerified {
-		response := utils.ErrorResponse("Invalid inputs!", "", nil)
+		response := utils.ErrorResponse("Authentication failed!", "", nil)
 		c.Writer.WriteHeader(http.StatusExpectationFailed)
 		utils.ResponseJSON(c, response)
 	} else {

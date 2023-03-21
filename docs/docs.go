@@ -9,7 +9,15 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "API Support",
+            "url": "https://github.com/ajalck/ajal_portfolio",
+            "email": "ack6627@gmail.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -214,7 +222,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/categoryManagement/edit": {
+        "/admin/categoryManagement/delete": {
             "delete": {
                 "security": [
                     {
@@ -254,7 +262,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/admin/categoryManagement/edit": {
             "patch": {
                 "security": [
                     {
@@ -520,7 +530,49 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handler.ProductId"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/productManagement/edit": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "6.Product Management"
+                ],
+                "summary": "Update Products",
+                "operationId": "update products",
+                "parameters": [
+                    {
+                        "description": "Update Product",
+                        "name": "newProduct",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateProduct"
                         }
                     }
                 ],
@@ -569,48 +621,6 @@ const docTemplate = `{
                         "name": "records",
                         "in": "query",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/productManagement/update": {
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "6.Product Management"
-                ],
-                "summary": "Update Products",
-                "operationId": "update products",
-                "parameters": [
-                    {
-                        "description": "Update Product",
-                        "name": "newProduct",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.UpdateProduct"
-                        }
                     }
                 ],
                 "responses": {
@@ -1005,7 +1015,7 @@ const docTemplate = `{
             }
         },
         "/user/cart/remove/:productid": {
-            "post": {
+            "delete": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -1111,22 +1121,19 @@ const docTemplate = `{
                         "type": "string",
                         "description": "cart_ID",
                         "name": "cart_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "order_id",
                         "name": "order_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "coupon_id",
                         "name": "coupon_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1165,22 +1172,19 @@ const docTemplate = `{
                         "type": "string",
                         "description": "cart_ID",
                         "name": "cart_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "order_id",
                         "name": "order_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "coupon_id",
                         "name": "coupon_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1219,8 +1223,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Product_ID",
                         "name": "product_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1806,6 +1809,9 @@ const docTemplate = `{
                 "pin_code": {
                     "type": "string"
                 },
+                "shipping_id": {
+                    "type": "string"
+                },
                 "street": {
                     "type": "string"
                 },
@@ -1813,7 +1819,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -1842,10 +1848,10 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "product_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "validity": {
                     "type": "integer"
@@ -1965,6 +1971,14 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ProductId": {
+            "type": "object",
+            "properties": {
+                "product_code": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.Signin": {
             "type": "object",
             "required": [
@@ -2017,17 +2031,24 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Go + Gin Stylezine API",
+	Description:      "This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/ajalck/Stylezine_e-commerce_project",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

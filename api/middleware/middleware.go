@@ -22,7 +22,6 @@ func NewMiddleware(jwtServices services.JwtServices) Middleware {
 	}
 }
 func (m *middleware) AuthorizeJWT(c *gin.Context) {
-	path := strings.Split(c.Request.URL.Path, "")
 	authHeader := c.Request.Header.Get("Authorization")
 	bearerToken := strings.Split(authHeader, " ")
 
@@ -35,15 +34,16 @@ func (m *middleware) AuthorizeJWT(c *gin.Context) {
 	authToken := bearerToken[1]
 	ok, claims := m.jwtService.VerifyToken(authToken)
 	if !ok {
-		c.JSON(401, "Autherization failed !")
+		c.JSON(401, "Authorization failed !")
 		c.Writer.Header().Set("Content-Type", "application/json")
 		c.Writer.WriteHeader(http.StatusUnauthorized)
 		c.Abort()
 		return
 	}
-	role := strings.Split(claims.UserRole, "")
-	if path[1] != role[0] {
-		c.JSON(401, "Autherization failed !")
+
+	path := strings.Split(c.Request.URL.Path, "/")
+	if path[1] != claims.UserRole {
+		c.JSON(401, "Authorization failed !")
 		c.Abort()
 	}
 	user_id := fmt.Sprint(claims.UserId)

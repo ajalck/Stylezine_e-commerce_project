@@ -39,12 +39,14 @@ definitions:
         type: string
       pin_code:
         type: string
+      shipping_id:
+        type: string
       street:
         type: string
       updatedAt:
         type: string
       user_id:
-        type: integer
+        type: string
     required:
     - email
     - phone
@@ -67,9 +69,9 @@ definitions:
       min_cost:
         type: number
       product_id:
-        type: integer
+        type: string
       user_id:
-        type: integer
+        type: string
       validity:
         type: integer
     type: object
@@ -152,6 +154,11 @@ definitions:
     - password
     - phone
     type: object
+  handler.ProductId:
+    properties:
+      product_code:
+        type: string
+    type: object
   handler.Signin:
     properties:
       password:
@@ -188,7 +195,17 @@ definitions:
         type: boolean
     type: object
 info:
-  contact: {}
+  contact:
+    email: ack6627@gmail.com
+    name: API Support
+    url: https://github.com/ajalck/ajal_portfolio
+  description: This is a sample server Job Portal server. You can visit the GitHub
+    repository at https://github.com/ajalck/Stylezine_e-commerce_project
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Go + Gin Stylezine API
+  version: "1.0"
 paths:
   /admin/brandManagement/add:
     post:
@@ -313,7 +330,7 @@ paths:
       summary: Add Categories
       tags:
       - 4.Category Management
-  /admin/categoryManagement/edit:
+  /admin/categoryManagement/delete:
     delete:
       operationId: delete categories
       parameters:
@@ -339,6 +356,7 @@ paths:
       summary: Delete Categories
       tags:
       - 4.Category Management
+  /admin/categoryManagement/edit:
     patch:
       operationId: update categories
       parameters:
@@ -499,7 +517,7 @@ paths:
         name: Productid
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/handler.ProductId'
       produces:
       - application/json
       responses:
@@ -514,6 +532,32 @@ paths:
       security:
       - BearerAuth: []
       summary: Delete Products
+      tags:
+      - 6.Product Management
+  /admin/productManagement/edit:
+    patch:
+      operationId: update products
+      parameters:
+      - description: Update Product
+        in: body
+        name: newProduct
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Update Products
       tags:
       - 6.Product Management
   /admin/productManagement/list/:page/:records:
@@ -544,32 +588,6 @@ paths:
       security:
       - BearerAuth: []
       summary: List Products
-      tags:
-      - 6.Product Management
-  /admin/productManagement/update:
-    patch:
-      operationId: update products
-      parameters:
-      - description: Update Product
-        in: body
-        name: newProduct
-        required: true
-        schema:
-          $ref: '#/definitions/handler.UpdateProduct'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/utils.Response'
-      security:
-      - BearerAuth: []
-      summary: Update Products
       tags:
       - 6.Product Management
   /admin/registration/login:
@@ -811,7 +829,7 @@ paths:
       tags:
       - User Cart
   /user/cart/remove/:productid:
-    post:
+    delete:
       operationId: user delete cart
       parameters:
       - description: Product_ID
@@ -872,17 +890,14 @@ paths:
       - description: cart_ID
         in: query
         name: cart_id
-        required: true
         type: string
       - description: order_id
         in: query
         name: order_id
-        required: true
         type: string
       - description: coupon_id
         in: query
         name: coupon_id
-        required: true
         type: string
       produces:
       - application/json
@@ -907,17 +922,14 @@ paths:
       - description: cart_ID
         in: query
         name: cart_id
-        required: true
         type: string
       - description: order_id
         in: query
         name: order_id
-        required: true
         type: string
       - description: coupon_id
         in: query
         name: coupon_id
-        required: true
         type: string
       produces:
       - application/json
@@ -942,7 +954,6 @@ paths:
       - description: Product_ID
         in: query
         name: product_id
-        required: true
         type: string
       produces:
       - application/json
@@ -1277,4 +1288,9 @@ paths:
       summary: View wishlist
       tags:
       - User Wishlist
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

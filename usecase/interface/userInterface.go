@@ -9,23 +9,23 @@ type UserUseCase interface {
 	CreateUser(newUser domain.User) error
 	ListProducts(page, perPage int) ([]domain.ProductResponse, utils.MetaData, error)
 	//Wishlist
-	AddWishlist(user_id, Product_id int) error
-	ViewWishList(user_id, page, perPage int) ([]domain.WishListResponse, utils.MetaData, error)
-	DeleteWishList(user_id, product_id int) error
+	AddWishlist(user_id, Product_id string) error
+	ViewWishList(user_id string, page, perPage int) ([]domain.WishListResponse, utils.MetaData, error)
+	DeleteWishList(wishlist_id string) error
 	//Cart
-	AddCart(user_id, product_id int) (error, string)
-	ViewCart(user_id, page, perPage int) ([]domain.CartResponse, utils.MetaData, error)
-	DeleteCart(user_id, product_id int) error
+	AddCart(user_id, product_id string) (error, string)
+	ViewCart(user_id string, page, perPage int) ([]domain.CartResponse,float32, utils.MetaData, error)
+	DeleteCart(user_id, product_id string) error
 	//Coupon
-	ListCoupon(user_id, product_id int) ([]domain.CouponResponse, error)
-	ApplyCoupon(cart_id, order_id string, coupon_id int) error
-	CancelCoupon(cart_id, order_id string, coupon_id int) error
+	ListCoupon(user_id, product_id string) ([]domain.CouponResponse, error)
+	ApplyCoupon(cart_id, order_id , coupon_id string) error
+	CancelCoupon(cart_id, order_id , coupon_id string) error
 	//Shipping
-	AddShippingDetails(user_id int, newAddress domain.ShippingDetails) error
-	ListShippingDetails(user_id int) ([]domain.ShippingDetailsResponse, error)
-	DeleteShippingDetails(user_id, address_id int) error
+	AddShippingDetails(user_id string, newAddress domain.ShippingDetails) error
+	ListShippingDetails(user_id string) ([]domain.ShippingDetailsResponse, error)
+	DeleteShippingDetails(user_id, address_id string) error
 	//order
-	CheckOut(cart_id string, user_id, product_id, address_id int) (string, error)
+	CheckOut(cart_id , user_id, product_id, address_id string) (string, error)
 	OrderSummery(order_id string) ([]domain.OrderSummery, error)
 	UpdateOrder(orders_id, product_id string, orderUpdates interface{}) error
 }

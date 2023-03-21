@@ -92,12 +92,12 @@ func (ah *AdminHandler) ListUsers(c *gin.Context) {
 
 	users, metaData, err := ah.adminUseCase.ListUsers(page, perPage)
 	type Page struct {
-		users    []domain.UserResponse
-		metaData utils.MetaData
+		Users    []domain.UserResponse
+		MetaData utils.MetaData
 	}
 	result := Page{
-		users:    users,
-		metaData: metaData,
+		Users:    users,
+		MetaData: metaData,
 	}
 	if err != nil {
 		response := utils.ErrorResponse("Couldnlt list users !", err.Error(), nil)
@@ -105,10 +105,9 @@ func (ah *AdminHandler) ListUsers(c *gin.Context) {
 		utils.ResponseJSON(c, response)
 		return
 	}
-	response := utils.SuccessResponse("Here is the users ...", result.users)
+	response := utils.SuccessResponse("Here is the users ...", result)
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
-	c.JSON(200, result.metaData)
 
 }
 
@@ -203,12 +202,12 @@ func (ah *AdminHandler) ListBlockedUsers(c *gin.Context) {
 	perPage, _ := strconv.Atoi(c.Query("records"))
 	users, metaData, err := ah.adminUseCase.ListBlockedUsers(page, perPage)
 	type Page struct {
-		users    []domain.UserResponse
-		metaData utils.MetaData
+		Users    []domain.UserResponse
+		MetaData utils.MetaData
 	}
 	result := Page{
-		users:    users,
-		metaData: metaData,
+		Users:    users,
+		MetaData: metaData,
 	}
 	if err != nil {
 		response := utils.ErrorResponse("Couldnlt list users !", err.Error(), nil)
@@ -216,10 +215,9 @@ func (ah *AdminHandler) ListBlockedUsers(c *gin.Context) {
 		utils.ResponseJSON(c, response)
 		return
 	}
-	response := utils.SuccessResponse("Here is the users ...", result.users)
+	response := utils.SuccessResponse("Here is the users ...", result)
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
-	c.JSON(200, result.metaData)
 
 }
 
@@ -238,12 +236,12 @@ func (ah *AdminHandler) ListActiveUsers(c *gin.Context) {
 	perPage, _ := strconv.Atoi(c.Query("records"))
 	users, metaData, err := ah.adminUseCase.ListActiveUsers(page, perPage)
 	type Page struct {
-		users    []domain.UserResponse
-		metaData utils.MetaData
+		Users    []domain.UserResponse
+		MetaData utils.MetaData
 	}
 	result := Page{
-		users:    users,
-		metaData: metaData,
+		Users:    users,
+		MetaData: metaData,
 	}
 	if err != nil {
 		response := utils.ErrorResponse("Couldnlt list users !", err.Error(), nil)
@@ -251,10 +249,9 @@ func (ah *AdminHandler) ListActiveUsers(c *gin.Context) {
 		utils.ResponseJSON(c, response)
 		return
 	}
-	response := utils.SuccessResponse("Here is the users ...", result.users)
+	response := utils.SuccessResponse("Here is the users ...", result)
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
-	c.JSON(200, result.metaData)
 
 }
 
@@ -351,7 +348,7 @@ func (ah *AdminHandler) EditCategory(c *gin.Context) {
 // @Param Cateogory body domain.Category{} true "Delete Category"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
-// @Router /admin/categoryManagement/edit [delete]
+// @Router /admin/categoryManagement/delete [delete]
 func (ah *AdminHandler) DeleteCategory(c *gin.Context) {
 
 	var category domain.Category
@@ -562,24 +559,20 @@ func (ah *AdminHandler) ListProducts(c *gin.Context) {
 	perPage, _ := strconv.Atoi(c.Query("records"))
 
 	products, metaData, err := ah.adminUseCase.ListProducts(page, perPage)
-	type Page struct {
-		products []domain.ProductResponse
-		metaData utils.MetaData
-	}
-	result := Page{
-		products: products,
-		metaData: metaData,
-	}
+	Page := struct {
+		Products []domain.ProductResponse
+		MetaData utils.MetaData
+	}{Products: products,
+		MetaData: metaData}
 	if err != nil {
 		response := utils.ErrorResponse("Couldnlt list products !", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusUnprocessableEntity)
 		utils.ResponseJSON(c, response)
 		return
 	}
-	response := utils.SuccessResponse("Here is the products ...", result.products)
+	response := utils.SuccessResponse("Here is the products ...", Page)
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
-	c.JSON(200, result.metaData)
 
 }
 
@@ -600,7 +593,7 @@ type UpdateProduct struct {
 // @Param newProduct body UpdateProduct{} true "Update Product"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
-// @Router /admin/productManagement/update [patch]
+// @Router /admin/productManagement/edit [patch]
 func (ah *AdminHandler) EditProducts(c *gin.Context) {
 
 	var product *UpdateProduct
@@ -632,26 +625,28 @@ func (ah *AdminHandler) EditProducts(c *gin.Context) {
 
 }
 
-var ProductID string
+type ProductId struct {
+	Product_Code string `json:"product_code"`
+}
 
 // @Summary Delete Products
 // @ID delete products
 // @Tags 6.Product Management
 // @Security BearerAuth
 // @Produce json
-// @Param Productid body string true "Product_ID"
+// @Param Productid body ProductId{} true "Product_ID"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
 // @Router /admin/productManagement/delete [delete]
 func (ah *AdminHandler) DeleteProducts(c *gin.Context) {
-
-	if err := c.Bind(&ProductID); err != nil {
+	product := &ProductId{}
+	if err := c.Bind(&product); err != nil {
 		response := utils.ErrorResponse("Invalid inputs !", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		utils.ResponseJSON(c, response)
 		return
 	}
-	err := ah.adminUseCase.DeleteProducts(ProductID)
+	err := ah.adminUseCase.DeleteProducts(product.Product_Code)
 	if err != nil {
 		response := utils.ErrorResponse("Unable delete product !", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusUnprocessableEntity)
@@ -669,8 +664,8 @@ func (ah *AdminHandler) DeleteProducts(c *gin.Context) {
 type AddCoupon struct {
 	Coupon_Code     string  `json:"coupon_code"`
 	Discount_amount float32 `json:"discount_amount"`
-	User_ID         uint    `json:"user_id"`
-	Product_ID      uint    `json:"product_id"`
+	User_ID         string  `json:"user_id"`
+	Product_ID      string  `json:"product_id"`
 	Min_Cost        float32 `json:"min_cost"`
 	Validity        int64   `json:"validity"`
 }
@@ -732,10 +727,10 @@ func (ah *AdminHandler) ListCoupon(c *gin.Context) {
 	perPage, _ := strconv.Atoi(c.Query("records"))
 	coupon, metaData, err := ah.adminUseCase.ListCoupon(page, perPage)
 	results := struct {
-		coupon   []domain.CouponResponse
+		Coupon   []domain.CouponResponse
 		MetaData utils.MetaData
 	}{
-		coupon:   coupon,
+		Coupon:   coupon,
 		MetaData: metaData,
 	}
 	if err != nil {
@@ -744,10 +739,9 @@ func (ah *AdminHandler) ListCoupon(c *gin.Context) {
 		utils.ResponseJSON(c, response)
 		return
 	}
-	response := utils.SuccessResponse("Here is the coupons", results.coupon)
+	response := utils.SuccessResponse("Here is the coupons", results)
 	c.Writer.WriteHeader(200)
 	utils.ResponseJSON(c, response)
-	c.JSON(200, results.MetaData)
 }
 
 // @Summary Delete Coupons

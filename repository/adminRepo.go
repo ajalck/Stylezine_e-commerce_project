@@ -65,8 +65,8 @@ func (ar *AdminRepo) ListUsers(page, perPage int) ([]domain.UserResponse, utils.
 func (ar *AdminRepo) ViewUser(id string) (domain.UserResponse, error) {
 
 	User := domain.UserResponse{}
-	ar.DB.Table("users").Select("id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where("user_id=?", id).Where("user_role", "user").Find(&User)
-	if User.ID == "" {
+	ar.DB.Table("users").Select("user_id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where("user_id=?", id).Where("user_role", "user").Find(&User)
+	if User.User_ID == "" {
 		err := errors.New("no user found")
 		return User, err
 	}
@@ -94,7 +94,7 @@ func (ar *AdminRepo) ListBlockedUsers(page, perPage int) ([]domain.UserResponse,
 		return Users, metaData, err
 	}
 
-	result := ar.DB.Model(&domain.User{}).Select("id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where(&domain.User{User_Role: "user", Status: "blocked"}).Offset(offset).Limit(perPage).Find(&Users)
+	result := ar.DB.Model(&domain.User{}).Select("user_id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where(&domain.User{User_Role: "user", Status: "blocked"}).Offset(offset).Limit(perPage).Find(&Users)
 	is := errors.Is(result.Error, gorm.ErrRecordNotFound)
 	if is == true {
 		return Users, metaData, errors.New("Record not found")
@@ -113,7 +113,7 @@ func (ar *AdminRepo) ListActiveUsers(page, perPage int) ([]domain.UserResponse, 
 		return Users, metaData, err
 	}
 
-	result := ar.DB.Model(&domain.User{}).Select("id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where(&domain.User{User_Role: "user", Status: "active"}).Offset(offset).Limit(perPage).Find(&Users)
+	result := ar.DB.Model(&domain.User{}).Select("user_id", "first_name", "last_name", "email", "gender", "phone", "status", "user_role").Where(&domain.User{User_Role: "user", Status: "active"}).Offset(offset).Limit(perPage).Find(&Users)
 	is := errors.Is(result.Error, gorm.ErrRecordNotFound)
 	if is == true {
 		return Users, metaData, errors.New("Record not found")
@@ -167,8 +167,9 @@ func (ar *AdminRepo) EditCategory(category domain.Category) error {
 }
 func (ar *AdminRepo) DeleteCategory(category domain.Category) error {
 
-	if err := ar.DB.Raw("DELETE FROM categories WHERE category_id=$1 OR category_name=$2;", category.Category_ID, category.Category_name).Scan(&category).Error; err != nil {
-		return err
+	err := ar.DB.Where(&domain.Category{Category_ID: category.Category_ID}).Delete(&category)
+	if err.Error != nil {
+		return err.Error
 	}
 	return nil
 }
@@ -255,7 +256,7 @@ func (ar *AdminRepo) ListProducts(page, perPage int) ([]domain.ProductResponse, 
 		return Products, metaData, err
 	}
 
-	result := ar.DB.Model(&domain.Products{}).Select("id", "item", "product_name", "discription", "product_image", "category_name", "brand_name", "size", "color", "unit_price", "stock", "rating").
+	result := ar.DB.Model(&domain.Products{}).Select("product_code", "item", "product_name", "discription", "product_image", "category_name", "brand_name", "size", "color", "unit_price", "stock", "rating", "status").
 		Joins("inner join categories on products.category_id=categories.category_id").
 		Joins("inner join brands on products.brand_id=brands.brand_id").Offset(offset).Limit(perPage).Find(&Products)
 	is := errors.Is(result.Error, gorm.ErrRecordNotFound)

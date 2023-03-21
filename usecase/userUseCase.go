@@ -62,22 +62,22 @@ func (uc *userUseCase) ListProducts(page, perPage int) ([]domain.ProductResponse
 
 //Wishlist
 
-func (uc *userUseCase) AddWishlist(user_id, product_id int) error {
+func (uc *userUseCase) AddWishlist(user_id, product_id string) error {
 	err := uc.userRepo.AddWishlist(user_id, product_id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (uc *userUseCase) ViewWishList(user_id, page, perPage int) ([]domain.WishListResponse, utils.MetaData, error) {
+func (uc *userUseCase) ViewWishList(user_id string, page, perPage int) ([]domain.WishListResponse, utils.MetaData, error) {
 	wishListResponse, metaData, err := uc.userRepo.ViewWishList(user_id, page, perPage)
 	if err != nil {
 		return wishListResponse, metaData, err
 	}
 	return wishListResponse, metaData, nil
 }
-func (uc *userUseCase) DeleteWishList(user_id, product_id int) error {
-	err := uc.userRepo.DeleteWishList(user_id, product_id)
+func (uc *userUseCase) DeleteWishList(wishlist_id string) error {
+	err := uc.userRepo.DeleteWishList(wishlist_id)
 	if err != nil {
 		return err
 	}
@@ -86,28 +86,28 @@ func (uc *userUseCase) DeleteWishList(user_id, product_id int) error {
 
 //Cart
 
-func (uc *userUseCase) AddCart(user_id, product_id int) (error, string) {
+func (uc *userUseCase) AddCart(user_id, product_id string) (error, string) {
 	err, cart_id := uc.userRepo.AddCart(user_id, product_id)
 	if err != nil {
 		return err, cart_id
 	}
 	return nil, cart_id
 }
-func (uc *userUseCase) ViewCart(user_id, page, perPage int) ([]domain.CartResponse, utils.MetaData, error) {
-	carts, metaData, err := uc.userRepo.ViewCart(user_id, page, perPage)
+func (uc *userUseCase) ViewCart(user_id string, page, perPage int) ([]domain.CartResponse, float32, utils.MetaData, error) {
+	carts, grand_total, metaData, err := uc.userRepo.ViewCart(user_id, page, perPage)
 	if err != nil {
-		return carts, metaData, err
+		return carts, 0, metaData, err
 	}
-	return carts, metaData, nil
+	return carts, grand_total, metaData, nil
 }
-func (uc *userUseCase) ListCoupon(user_id, product_id int) ([]domain.CouponResponse, error) {
+func (uc *userUseCase) ListCoupon(user_id, product_id string) ([]domain.CouponResponse, error) {
 	coupons, err := uc.userRepo.ListCoupon(user_id, product_id)
 	if err != nil {
 		return coupons, err
 	}
 	return coupons, nil
 }
-func (uc *userUseCase) ApplyCoupon(cart_id, order_id string, coupon_id int) error {
+func (uc *userUseCase) ApplyCoupon(cart_id, order_id, coupon_id string) error {
 
 	err := uc.userRepo.ApplyCoupon(cart_id, order_id, coupon_id)
 	if err != nil {
@@ -116,7 +116,7 @@ func (uc *userUseCase) ApplyCoupon(cart_id, order_id string, coupon_id int) erro
 	return nil
 
 }
-func (uc *userUseCase) CancelCoupon(cart_id, order_id string, coupon_id int) error {
+func (uc *userUseCase) CancelCoupon(cart_id, order_id, coupon_id string) error {
 
 	err := uc.userRepo.CancelCoupon(cart_id, order_id, coupon_id)
 	if err != nil {
@@ -125,7 +125,7 @@ func (uc *userUseCase) CancelCoupon(cart_id, order_id string, coupon_id int) err
 	return nil
 
 }
-func (uc *userUseCase) DeleteCart(user_id, product_id int) error {
+func (uc *userUseCase) DeleteCart(user_id, product_id string) error {
 	err := uc.userRepo.DeleteCart(user_id, product_id)
 	if err != nil {
 		return err
@@ -135,21 +135,21 @@ func (uc *userUseCase) DeleteCart(user_id, product_id int) error {
 
 //Shipping
 
-func (uc *userUseCase) AddShippingDetails(user_id int, newAddress domain.ShippingDetails) error {
+func (uc *userUseCase) AddShippingDetails(user_id string, newAddress domain.ShippingDetails) error {
 	err := uc.userRepo.AddShippingDetails(user_id, newAddress)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (uc *userUseCase) ListShippingDetails(user_id int) ([]domain.ShippingDetailsResponse, error) {
+func (uc *userUseCase) ListShippingDetails(user_id string) ([]domain.ShippingDetailsResponse, error) {
 	shippingDetails, err := uc.userRepo.ListShippingDetails(user_id)
 	if err != nil {
 		return shippingDetails, err
 	}
 	return shippingDetails, nil
 }
-func (uc *userUseCase) DeleteShippingDetails(user_id, address_id int) error {
+func (uc *userUseCase) DeleteShippingDetails(user_id, address_id string) error {
 	err := uc.userRepo.DeleteShippingDetails(user_id, address_id)
 	if err != nil {
 		return err
@@ -158,11 +158,11 @@ func (uc *userUseCase) DeleteShippingDetails(user_id, address_id int) error {
 }
 
 // Order
-func (uc *userUseCase) CheckOut(cart_id string, user_id, product_id, address_id int) (string, error) {
-	if product_id == 0 && cart_id == "" {
+func (uc *userUseCase) CheckOut(cart_id, user_id, product_id, address_id string) (string, error) {
+	if product_id == "" && cart_id == "" {
 		return "", errors.New("Please select a product")
 	}
-	if address_id == 0 {
+	if address_id == "" {
 		return "", errors.New("Please enter the shipping details")
 	}
 	id, err := uc.userRepo.CheckOut(cart_id, user_id, product_id, address_id)
