@@ -713,6 +713,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/sales_report": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sales Report"
+                ],
+                "summary": "Sales report",
+                "operationId": "sales report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Page No",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "No of records",
+                        "name": "records",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/userManagement/blockuser/:id": {
             "patch": {
                 "security": [
@@ -1133,7 +1180,8 @@ const docTemplate = `{
                         "type": "string",
                         "description": "coupon_id",
                         "name": "coupon_id",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1153,7 +1201,7 @@ const docTemplate = `{
             }
         },
         "/user/coupon/cancelcoupon/:cartid/:orderid/:couponid": {
-            "delete": {
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -1184,7 +1232,8 @@ const docTemplate = `{
                         "type": "string",
                         "description": "coupon_id",
                         "name": "coupon_id",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1321,6 +1370,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/order/cancel/:orderid": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Order"
+                ],
+                "summary": "cancel order",
+                "operationId": "user cancel order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "order_ID",
+                        "name": "order_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user/order/checkout/:cartid/:productid/:shippingid": {
             "post": {
                 "security": [
@@ -1341,15 +1430,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "cart_ID",
                         "name": "cart_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "product_ID",
                         "name": "product_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
@@ -1375,7 +1462,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/order/ordersummery/:orderid": {
+        "/user/order/ordersummery": {
             "get": {
                 "security": [
                     {
@@ -1390,64 +1477,6 @@ const docTemplate = `{
                 ],
                 "summary": "View order summery",
                 "operationId": "user view order summery",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "order_ID",
-                        "name": "order_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/order/update/:orderid": {
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User Order"
-                ],
-                "summary": "update order",
-                "operationId": "user update order",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "order_ID",
-                        "name": "order_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "description": "Order Updates",
-                        "name": "OrderUpdates",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1486,7 +1515,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.ShippingDetails"
+                            "$ref": "#/definitions/handler.Shipping"
                         }
                     }
                 ],
@@ -1768,73 +1797,6 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.ShippingDetails": {
-            "type": "object",
-            "required": [
-                "email",
-                "phone",
-                "pin_code"
-            ],
-            "properties": {
-                "address": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "land_mark": {
-                    "type": "string"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "pin_code": {
-                    "type": "string"
-                },
-                "shipping_id": {
-                    "type": "string"
-                },
-                "street": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "gorm.DeletedAt": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
-                }
-            }
-        },
         "handler.AddCoupon": {
             "type": "object",
             "properties": {
@@ -1975,6 +1937,43 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "product_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.Shipping": {
+            "type": "object",
+            "required": [
+                "email",
+                "phone",
+                "pin_code"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "land_mark": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "pin_code": {
+                    "type": "string"
+                },
+                "street": {
                     "type": "string"
                 }
             }

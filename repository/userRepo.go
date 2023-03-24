@@ -143,7 +143,6 @@ func (ur *UserRepo) AddCart(user_id, product_id string) (error, string) {
 		Cart_ID:     id,
 		User_ID:     user_id,
 		Product_ID:  product_id,
-		Coupon_id:   "",
 		Quantity:    1,
 		Unit_Price:  *unit_price,
 		Total_Price: *unit_price,
@@ -153,12 +152,14 @@ func (ur *UserRepo) AddCart(user_id, product_id string) (error, string) {
 		Cart.Quantity = Cart.Quantity + 1
 		Cart.Total_Price = float32(Cart.Quantity) * *unit_price
 		ur.DB.Model(&cart).Where(&domain.Cart{User_ID: user_id, Product_ID: product_id}).Updates(&domain.Cart{Quantity: Cart.Quantity, Total_Price: Cart.Total_Price})
+		ur.Final_Cart(cart.Cart_ID, "not applied")
 		return nil, Cart.Cart_ID
 	}
-	result = ur.DB.Select("cart_id", "user_id", "product_id", "coupon_id", "quantity", "unit_price", "total_price").Create(&cart)
+	result = ur.DB.Select("cart_id", "user_id", "product_id", "quantity", "unit_price", "total_price").Create(&cart)
 	if is := errors.Is(result.Error, gorm.ErrRegistered); is == true {
 		return result.Error, cart.Cart_ID
 	}
+	ur.Final_Cart(cart.Cart_ID, "not applied")
 	return nil, cart.Cart_ID
 }
 
@@ -180,8 +181,10 @@ func (ur *UserRepo) ViewCart(user_id string, page, perPage int) ([]domain.CartRe
 	if err != nil {
 		return cart, 0, metaData, err
 	}
-	result := ur.DB.Model(&domain.Cart{}).Select("cart_id", "user_id", "product_id", "item", "product_name", "product_image", "size", "color", "quantity", "total_price", "status").
-		Joins("right join products on products.product_code=carts.product_id").Where("carts.user_id", user_id).Offset(offset).Limit(perPage).Find(&cart)
+	result := ur.DB.Model(&domain.Cart{}).Select("carts.cart_id", "user_id", "product_id", "coupon_id", "item", "product_name", "product_image", "size", "color", "quantity", "carts.total_price", "status").
+		Joins("right join products on products.product_code=carts.product_id").
+		Joins("right join final_carts on carts.cart_id=final_carts.cart_id").
+		Where("carts.user_id", user_id).Offset(offset).Limit(perPage).Find(&cart)
 
 	if is := errors.Is(result.Error, gorm.ErrRecordNotFound); is == true {
 		return cart, 0, metaData, result.Error
@@ -233,14 +236,14 @@ func (ur *UserRepo) ListCoupon(user_id, product_id string) ([]domain.CouponRespo
 	if err != nil {
 		return coupons, err
 	}
-	result := ur.DB.Raw("SELECT coupon_code,discount_amount,user_id,product_id,min_cost,expires_at,coupon_status FROM coupons WHERE user_id IN ($1,null) AND product_id IN ($2,null) AND coupon_status=$3;", user_id, product_id, "active").Scan(&coupons)
+	// sql := `select (coupon_code,discount_amount,user_id,product_id,min_cost,expires_at,coupon_status) from coupons where (user_id in($1) or user_id is null) and (product_id in($2)or product_id is null) and coupon_status ='active';`
+	result := ur.DB.Model(&domain.Coupon{}).Where("(user_id = ? OR user_id IS NULL) AND (product_id = ? OR product_id IS NULL) AND coupon_status = ?", user_id, product_id, "active").Find(&coupons)
 	if result.Error != nil {
 		return coupons, result.Error
 	}
-	fmt.Println(coupons)
 	return coupons, nil
 }
-func (ur *UserRepo) ValidateCoupon(user_id, product_id, coupon_id string) (bool, error) {
+func (ur *UserRepo) ValidateCoupon(user_id, product_id, cart_id, coupon_id string) (bool, error) {
 	user := domain.User{}
 	ur.DB.Where("user_id", user_id).First(&user)
 	product := domain.Products{}
@@ -258,13 +261,17 @@ func (ur *UserRepo) ValidateCoupon(user_id, product_id, coupon_id string) (bool,
 			return false, errors.New("Coupon alredy used")
 		} else {
 			orders := []domain.Order{}
-			result := ur.DB.Where("user_id", user_id).Find(&orders)
-			if result.Error != nil {
-				for i := range orders {
-					if orders[i].Coupon_ID == coupon_id {
-						return false, errors.New("Coupon alredy used")
+			result := ur.DB.Where("user_id=? AND order_status=? AND coupon_id=?", user_id, "success", coupon_id).First(&orders)
+			if result.Error == nil {
+				return false, errors.New("Coupon alredy used")
+			}
+			if coupon.Product_ID != nil {
+				if product_id != "" {
+					if coupon.Product_ID == &product_id {
+						return true, nil
 					}
 				}
+				return false, errors.New("This coupon is applicable for selected products only !")
 			}
 		}
 		return true, nil
@@ -274,14 +281,16 @@ func (ur *UserRepo) ValidateCoupon(user_id, product_id, coupon_id string) (bool,
 func (ur *UserRepo) ApplyCoupon(cart_id, order_id, coupon_id string) error {
 	if cart_id == "" {
 		order := &domain.Order{}
-		ur.DB.Where("id", order_id).First(&order)
+		orderreport := &domain.OrderReport{}
+		ur.DB.Where("order_id", order_id).First(&order)
+		ur.DB.Where("order_id", order_id).First(&orderreport)
 		if order.Order_ID != "" {
-			if order.Coupon_ID != "" {
+			if order.Coupon_ID != "not applied" {
 				return errors.New("one coupon is already applied")
 			}
-			valid, err := ur.ValidateCoupon(order.User_ID, order.Product_ID, coupon_id)
+			valid, err := ur.ValidateCoupon(order.User_ID, orderreport.Product_ID, "", coupon_id)
 			if valid == true {
-				result := ur.DB.Table("orders").Where("order_id", order_id).Update("coupon_id", coupon_id)
+				result := ur.DB.Table("orders").Where("order_id", order_id, "order_status", "pending").Update("coupon_id", coupon_id)
 				if result.Error != nil {
 					return result.Error
 				}
@@ -295,14 +304,15 @@ func (ur *UserRepo) ApplyCoupon(cart_id, order_id, coupon_id string) error {
 		cart := &domain.Cart{}
 		ur.DB.Where("cart_id", cart_id).First(&cart)
 		if cart.Cart_ID != "" {
-			if cart.Coupon_id != "" {
-				return errors.New("one coupon is already applied")
-			}
-			valid, err := ur.ValidateCoupon(cart.Cart_ID, cart.Product_ID, coupon_id)
+			valid, err := ur.ValidateCoupon(cart.User_ID, cart.Product_ID, cart_id, coupon_id)
 			if valid == true {
-				result := ur.DB.Table("carts").Where("cart_id", cart_id).Update("coupon_id", coupon_id)
-				if result.Error != nil {
-					return result.Error
+				final_cart := domain.Final_Cart{}
+				err := ur.DB.Where("cart_id", cart_id).First(&final_cart)
+				if err.Error == nil {
+					if final_cart.Coupon_ID != "not applied" {
+						return errors.New("One Coupon already applied")
+					}
+					ur.Final_Cart(cart_id, coupon_id)
 				}
 			} else {
 				return err
@@ -316,13 +326,13 @@ func (ur *UserRepo) ApplyCoupon(cart_id, order_id, coupon_id string) error {
 func (ur *UserRepo) CancelCoupon(cart_id, order_id, coupon_id string) error {
 	if cart_id == "" {
 		order := &domain.Order{}
-		ur.DB.Where("id", order_id).First(&order)
+		ur.DB.Where("order_id", order_id).First(&order)
 		if order.Order_ID != "" {
-			if order.Coupon_ID == "" {
+			if order.Coupon_ID == "not applied" {
 				return errors.New("not found applied coupons !")
 			}
 
-			result := ur.DB.Model(&domain.Cart{}).Where("user_id", order.User_ID).Delete("carts.coupon_id", coupon_id)
+			result := ur.DB.Model(&domain.Order{}).Where("order_id", order_id).Update("coupon_id", "not applied")
 			if result.Error != nil {
 				return result.Error
 			}
@@ -331,23 +341,52 @@ func (ur *UserRepo) CancelCoupon(cart_id, order_id, coupon_id string) error {
 			return errors.New("No product in the checklist")
 		}
 	} else {
-		cart := &domain.Cart{}
+		cart := &domain.Final_Cart{}
 		ur.DB.Where("cart_id", cart_id).First(&cart)
 		if cart.Cart_ID != "" {
-			if cart.Coupon_id == "" {
+			if cart.Coupon_ID == "not applied" {
 				return errors.New("not found applied coupons !")
 			}
-
-			result := ur.DB.Model(&domain.Cart{}).Where("cart_id", cart_id).Delete("carts.coupon_id", coupon_id)
-			if result.Error != nil {
-				return result.Error
-			}
+			ur.Final_Cart(cart_id, "not applied")
 
 		} else {
 			return errors.New("No product in the cart")
 		}
 	}
 	return nil
+}
+
+func (ur *UserRepo) Final_Cart(cart_id, coupon_id string) {
+	cart := []domain.Cart{}
+	final_cart := domain.Final_Cart{}
+	result := ur.DB.Where("cart_id", cart_id).Find(&cart)
+	if result.Error != nil {
+		return
+	}
+	var totalPrice float32
+	for i := range cart {
+		totalPrice = totalPrice + cart[i].Total_Price
+	}
+	results := ur.DB.Where("cart_id", cart_id).First(&final_cart)
+	if results.Error != nil {
+		ur.DB.Create(&domain.Final_Cart{Cart_ID: cart_id, Total_Price: totalPrice, Coupon_ID: coupon_id, Discount: 0.0, Grand_Total: totalPrice})
+		return
+	}
+	coupon := domain.Coupon{}
+	if coupon_id != "not applied" {
+		ur.DB.Where("coupon_code", coupon_id).First(&coupon)
+		grand_total := final_cart.Grand_Total - coupon.Discount_amount
+		ur.DB.Where("cart_id", cart_id).Updates(&domain.Final_Cart{Coupon_ID: coupon_id, Discount: coupon.Discount_amount, Grand_Total: grand_total})
+		return
+	} else {
+		if final_cart.Coupon_ID != "not applied" {
+			grand_total := final_cart.Grand_Total + final_cart.Discount
+			ur.DB.Model(&domain.Final_Cart{}).Where("cart_id", cart_id).Updates(map[string]interface{}{"coupon_id": coupon_id, "grand_total": grand_total, "discount": 0.0})
+			return
+		}
+		ur.DB.Where("cart_id", cart_id).Updates(&domain.Final_Cart{Total_Price: totalPrice, Grand_Total: totalPrice})
+	}
+
 }
 
 //Shipping
@@ -359,16 +398,18 @@ func (ur *UserRepo) AddShippingDetails(user_id string, newAddress domain.Shippin
 	if result.Error == nil {
 		return errors.New("Entered input is already one of your shipping details")
 	}
-	result = ur.DB.Create(&domain.ShippingDetails{First_Name: newAddress.First_Name,
-		Last_Name: newAddress.Last_Name,
-		Email:     newAddress.Email,
-		Phone:     newAddress.Phone,
-		City:      newAddress.City,
-		Street:    newAddress.Street,
-		Address:   newAddress.Address,
-		Pin_code:  newAddress.Pin_code,
-		Land_Mark: newAddress.Land_Mark,
-		User_ID:   user_id})
+	result = ur.DB.Create(&domain.ShippingDetails{
+		Shipping_ID: utils.GenerateID(),
+		First_Name:  newAddress.First_Name,
+		Last_Name:   newAddress.Last_Name,
+		Email:       newAddress.Email,
+		Phone:       newAddress.Phone,
+		City:        newAddress.City,
+		Street:      newAddress.Street,
+		Address:     newAddress.Address,
+		Pin_code:    newAddress.Pin_code,
+		Land_Mark:   newAddress.Land_Mark,
+		User_ID:     user_id})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -404,44 +445,41 @@ func (ur *UserRepo) CheckOut(cart_id, user_id, product_id, address_id string) (s
 		return "", result.Error
 	}
 	if cart_id != "" {
+		final_cart := domain.Final_Cart{}
 		cart := []domain.Cart{}
-		result := ur.DB.Where("cart_id", cart_id).Find(&cart)
+		result := ur.DB.Model(cart).Where("cart_id", cart_id).Find(&cart)
 		if result.Error != nil {
 			return "", result.Error
 		}
+		ur.DB.Where("cart_id", cart_id).First(&final_cart)
 		id := utils.GenerateID()
-		var totalPrice float32 = 0
-		var discount float32 = 0
-		for i := range cart {
-			coupon := &domain.Coupon{}
-			if cart[i].Coupon_id != "" {
-				result := ur.DB.Where("id", cart[i].Coupon_id).First(&coupon)
-				if result.Error != nil {
-					errors.Join(result.Error)
-				}
-			}
 
-			totalPrice = totalPrice + cart[i].Total_Price
-			discount = discount + coupon.Discount_amount
-			result = ur.DB.Create(&domain.Order{
-				Order_ID:       id,
-				User_ID:        cart[i].User_ID,
-				Product_ID:     cart[i].Product_ID,
-				Shipping_ID:    address_id,
-				Coupon_ID:      cart[i].Coupon_id,
-				Quantity:       cart[i].Quantity,
-				Discount:       coupon.Discount_amount,
-				TotalPrice:     totalPrice - coupon.Discount_amount,
-				Grand_Total:    totalPrice - discount,
-				GST:            ((totalPrice - discount) * 12) / 100,
-				Final:          (totalPrice - discount) + (((totalPrice - discount) * 12) / 100),
-				Order_Status:   "pending",
-				Payment_Status: "pending",
+		for i := range cart {
+			result := ur.DB.Create(&domain.OrderReport{
+				Order_ID:     id,
+				Product_ID:   cart[i].Product_ID,
+				Quantity:     cart[i].Quantity,
+				TotalPrice:   cart[i].Total_Price,
+				Order_Status: "pending",
 			})
 			if result.Error != nil {
 				return "", result.Error
 			}
-
+		}
+		result = ur.DB.Create(&domain.Order{
+			Order_ID:       id,
+			User_ID:        user_id,
+			Shipping_ID:    address_id,
+			Coupon_ID:      final_cart.Coupon_ID,
+			Discount:       final_cart.Discount,
+			Grand_Total:    final_cart.Grand_Total,
+			GST:            (final_cart.Grand_Total * 12) / 100,
+			Final:          (final_cart.Grand_Total) + ((final_cart.Grand_Total * 12) / 100),
+			Order_Status:   "pending",
+			Payment_Status: "pending",
+		})
+		if result.Error != nil {
+			return "", result.Error
 		}
 		return id, nil
 	} else {
@@ -450,15 +488,22 @@ func (ur *UserRepo) CheckOut(cart_id, user_id, product_id, address_id string) (s
 			return "", err
 		}
 		id := utils.GenerateID()
+		result := ur.DB.Create(&domain.OrderReport{
+			Order_ID:     id,
+			Product_ID:   product_id,
+			Quantity:     1,
+			TotalPrice:   *product.Unit_Price,
+			Order_Status: "pending",
+		})
+		if result.Error != nil {
+			return "", result.Error
+		}
 		result = ur.DB.Create(&domain.Order{
 			Order_ID:       id,
 			User_ID:        user_id,
-			Product_ID:     product_id,
 			Shipping_ID:    address_id,
-			Coupon_ID:      "",
-			Quantity:       1,
+			Coupon_ID:      "not applied",
 			Discount:       0,
-			TotalPrice:     *product.Unit_Price,
 			Order_Status:   "pending",
 			Payment_Status: "pending",
 		})
@@ -468,34 +513,64 @@ func (ur *UserRepo) CheckOut(cart_id, user_id, product_id, address_id string) (s
 		return id, nil
 	}
 }
-func (ur *UserRepo) OrderSummery(order_id string) ([]domain.OrderSummery, error) {
-	orderSummery := []domain.OrderSummery{}
-	// var totalRecords int64
-	// page := 1
-	// perPage := 1
-	// ur.DB.Model(&domain.Order{}).Where("user_id", user_id).Count(&totalRecords)
-	// metaData, offset, err := utils.ComputeMetaData(page, perPage, int(totalRecords))
-
-	// if err != nil {
-	// 	return orderSummery, metaData, err
-	// }
-	// results := ur.DB.Model(&domain.Order{}).Select("concat(shipping_details.first_name,' ',shipping_details.last_name) as shipping_name", "address as shipping_address", "product_name", "discription",
-	// 	"product_image", "quantity", "sum(discount)as discount", "sum(total_price)as grand_total", "mode_of_payment", "order_status", "payment_status").
-	// 	Joins("left join shipping_details on shipping_details.id=orders.shipping_id").
-	// 	Joins("left join products on products.id=orders.product_id").
-	// 	Where("orders.user_id", user_id).Offset(offset).Limit(perPage).Find(&orderSummery)
-
-	results := ur.DB.Model(&domain.Order{}).Where(&domain.Order{Order_ID: order_id, Order_Status: "pending"}).Find(&orderSummery)
-	if results.Error != nil {
-		return orderSummery, results.Error
+func (ur *UserRepo) OrderSummery(user_id string) (interface{}, domain.OrderSummery, error) {
+	orderSummery := domain.OrderSummery{}
+	type ProductDet struct {
+		Product_code  string
+		Product_Name  string
+		Discription   string
+		Product_Image *string
+		Quantity      int
+		TotalPrice    float32
 	}
-	return orderSummery, results.Error
+	orderreport := []domain.OrderReport{}
+	productDet := []ProductDet{}
+	results := ur.DB.Find(&orderreport).Where("user_id", user_id, "order_status", "pending")
+	order_id := orderreport[0].Order_ID
+	if results.Error != nil {
+		return nil, orderSummery, results.Error
+	}
+	for i := range orderreport {
+		product := &domain.Products{}
+		ur.DB.Where(&domain.Products{Product_Code: orderreport[i].Product_ID}).First(&product)
+		temp := ProductDet{
+			Product_code:  product.Product_Code,
+			Product_Name:  product.Product_Name,
+			Discription:   product.Discription,
+			Product_Image: product.Product_Image,
+			Quantity:      orderreport[i].Quantity,
+			TotalPrice:    orderreport[i].TotalPrice,
+		}
+		productDet = append(productDet, temp)
+	}
+	results = ur.DB.Model(&domain.Order{}).Where("order_id", order_id).Joins("right join shipping_details on shipping_details.shipping_id=orders.shipping_id").
+		Select("order_id", "orders.user_id", "shipping_details.shipping_id", "concat(first_name,' ',last_name)as shipping_name", "address as shipping_address",
+			"coupon_id", "discount", "grand_total", "gst", "final", "mode_of_payment", "order_status", "payment_status").
+		First(&orderSummery)
+	if results.Error != nil {
+		return nil, orderSummery, results.Error
+	}
+	return productDet, orderSummery, results.Error
 }
-func (ur *UserRepo) UpdateOrder(order_id, product_id string, orderUpdates interface{}) error {
-	// order := domain.Order{}
-	// result := ur.DB.Where(domain.Order{Order_ID: order_id, Product_ID: product_id}).First(&order)
-	// if result.Error != nil {
-	// 	return result.Error
-	// }
+func (ur *UserRepo) CancelOrder(order_id string) error {
+	order := domain.Order{}
+	result := ur.DB.Where(domain.Order{Order_ID: order_id, Order_Status: "pending"}).First(&order)
+	if result.Error != nil {
+		return result.Error
+	}
+	tx := ur.DB.Begin()
+
+	if err := tx.Table("orders").Where("order_id", order_id).Updates(&domain.Order{Order_Status: "cancelled", Payment_Status: "not payed"}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := tx.Table("order_reports").Where("order_id", order_id).Update("order_status", "cancelled").Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
 	return nil
 }

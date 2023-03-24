@@ -319,7 +319,7 @@ func (uh *UserHandler) ListCoupon(c *gin.Context) {
 // @Produce json
 // @Param cart_id query string false "cart_ID"
 // @Param order_id query string false "order_id"
-// @Param coupon_id query string false "coupon_id"
+// @Param coupon_id query string true "coupon_id"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
 // @Router /user/coupon/applycoupon/:cartid/:orderid/:couponid [post]
@@ -346,10 +346,10 @@ func (uh *UserHandler) ApplyCoupon(c *gin.Context) {
 // @Produce json
 // @Param cart_id query string false "cart_ID"
 // @Param order_id query string false "order_id"
-// @Param coupon_id query string false "coupon_id"
+// @Param coupon_id query string true "coupon_id"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
-// @Router /user/coupon/cancelcoupon/:cartid/:orderid/:couponid [delete]
+// @Router /user/coupon/cancelcoupon/:cartid/:orderid/:couponid [patch]
 func (uh *UserHandler) CancelCoupon(c *gin.Context) {
 	cart_id := c.Query("cart_id")
 	order_id := c.Query("order_id")
@@ -368,23 +368,46 @@ func (uh *UserHandler) CancelCoupon(c *gin.Context) {
 
 //Shipping
 
+type Shipping struct {
+	First_Name string `json:"first_name" gorm:"not null"`
+	Last_Name  string `json:"last_name"`
+	Email      string `json:"email" gorm:"not null" binding:"required,email"`
+	Phone      string `json:"phone" gorm:"not null" binding:"required,numeric,len=10"`
+	City       string `json:"city" gorm:"not null"`
+	Street     string `json:"street" gorm:"not null"`
+	Address    string `json:"address" gorm:"not null"`
+	Pin_code   string `json:"pin_code" gorm:"not null" binding:"required,numeric,len=6"`
+	Land_Mark  string `json:"land_mark"`
+}
+
 // @Summary Add Shipping details
 // @ID user add shipping details
 // @Tags User Shipping details
 // @Security BearerAuth
 // @Produce json
-// @Param newAddress body domain.ShippingDetails{} true "Shipping details"
+// @Param newAddress body Shipping{} true "Shipping details"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
 // @Router /user/shipping/adddetails [post]
 func (uh *UserHandler) AddShippingDetails(c *gin.Context) {
 	user_id := c.Writer.Header().Get("id")
-	var newAddress domain.ShippingDetails
-	if err := c.Bind(&newAddress); err != nil {
+	var address Shipping
+	if err := c.Bind(&address); err != nil {
 		response := utils.ErrorResponse("Invalid inputs", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		utils.ResponseJSON(c, response)
 		return
+	}
+	newAddress := domain.ShippingDetails{
+		First_Name: address.First_Name,
+		Last_Name:  address.Last_Name,
+		Email:      address.Email,
+		Phone:      address.Phone,
+		City:       address.City,
+		Street:     address.Street,
+		Address:    address.Address,
+		Pin_code:   address.Pin_code,
+		Land_Mark:  address.Land_Mark,
 	}
 	err := uh.userUseCase.AddShippingDetails(user_id, newAddress)
 	if err != nil {
@@ -451,8 +474,8 @@ func (uh *UserHandler) DeleteShippingDetails(c *gin.Context) {
 // @Tags User Order
 // @Security BearerAuth
 // @Produce json
-// @Param cart_id query string true "cart_ID"
-// @Param product_id query string true "product_ID"
+// @Param cart_id query string false "cart_ID"
+// @Param product_id query string false "product_ID"
 // @Param address_id query string true "address_ID"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
@@ -482,55 +505,50 @@ func (uh *UserHandler) CheckOut(c *gin.Context) {
 // @Tags User Order
 // @Security BearerAuth
 // @Produce json
-// @Param order_id query string true "order_ID"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
-// @Router /user/order/ordersummery/:orderid [get]
+// @Router /user/order/ordersummery [get]
 func (uh *UserHandler) OrderSummery(c *gin.Context) {
-	order_id := c.Query("order_id")
-	orderSummery, err := uh.userUseCase.OrderSummery(order_id)
-
+	user_id := c.Writer.Header().Get("user_id")
+	productDet, orderSummery, err := uh.userUseCase.OrderSummery(user_id)
+	Review := struct {
+		ProductDet   interface{}
+		OrderSummery domain.OrderSummery
+	}{
+		ProductDet:   productDet,
+		OrderSummery: orderSummery,
+	}
 	if err != nil {
 		response := utils.ErrorResponse("Couldn't display order summery", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusNotFound)
 		utils.ResponseJSON(c, response)
 		return
 	}
-	response := utils.SuccessResponse("Order summery :", orderSummery)
+	response := utils.SuccessResponse("Order summery :", Review)
 	c.Writer.WriteHeader(200)
 	utils.ResponseJSON(c, response)
-
 }
 
-// @Summary update order
-// @ID user update order
+// @Summary cancel order
+// @ID user cancel order
 // @Tags User Order
 // @Security BearerAuth
 // @Produce json
 // @Param order_id query string true "order_ID"
-// @Param OrderUpdates body interface{} true "Order Updates"
 // @Success 200 {object} utils.Response{}
 // @Failure 422 {object} utils.Response{}
-// @Router /user/order/update/:orderid [patch]
-func (uh *UserHandler) UpdateOrder(c *gin.Context) {
-	type OrderUpdates struct {
-		Quantity        int    `json:"quantity"`
-		Mode_of_Payment string `json:"mode_of_payment"`
-	}
-	updates := &OrderUpdates{}
-	if err := c.Bind(&updates); err != nil {
-		response := utils.ErrorResponse("Couldn't update order", err.Error(), nil)
+// @Router /user/order/cancel/:orderid [patch]
+func (uh *UserHandler) CancelOrder(c *gin.Context) {
+
+	order_id := c.Query("order_id")
+	err := uh.userUseCase.CancelOrder(order_id)
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't cancel the order", err.Error(), nil)
 		c.Writer.WriteHeader(http.StatusNotFound)
 		utils.ResponseJSON(c, response)
-	}
-	order_id := c.Query("order_id")
-	product_id := c.Query("product_id")
-	err := uh.userUseCase.UpdateOrder(order_id, product_id, updates)
-	if err != nil {
-
 		return
 	}
-	response := utils.SuccessResponse("order details updated :", nil)
+	response := utils.SuccessResponse("order cancelled successfully", nil)
 	c.Writer.WriteHeader(200)
 	utils.ResponseJSON(c, response)
 }

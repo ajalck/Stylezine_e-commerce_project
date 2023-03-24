@@ -15,51 +15,6 @@ definitions:
       category_name:
         type: string
     type: object
-  domain.ShippingDetails:
-    properties:
-      address:
-        type: string
-      city:
-        type: string
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      email:
-        type: string
-      first_name:
-        type: string
-      id:
-        type: integer
-      land_mark:
-        type: string
-      last_name:
-        type: string
-      phone:
-        type: string
-      pin_code:
-        type: string
-      shipping_id:
-        type: string
-      street:
-        type: string
-      updatedAt:
-        type: string
-      user_id:
-        type: string
-    required:
-    - email
-    - phone
-    - pin_code
-    type: object
-  gorm.DeletedAt:
-    properties:
-      time:
-        type: string
-      valid:
-        description: Valid is true if Time is not NULL
-        type: boolean
-    type: object
   handler.AddCoupon:
     properties:
       coupon_code:
@@ -158,6 +113,31 @@ definitions:
     properties:
       product_code:
         type: string
+    type: object
+  handler.Shipping:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      land_mark:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      pin_code:
+        type: string
+      street:
+        type: string
+    required:
+    - email
+    - phone
+    - pin_code
     type: object
   handler.Signin:
     properties:
@@ -638,6 +618,36 @@ paths:
       summary: Admin Signup
       tags:
       - 1.Admin Registration
+  /admin/sales_report:
+    get:
+      operationId: sales report
+      parameters:
+      - description: Page No
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: No of records
+        in: query
+        name: records
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Sales report
+      tags:
+      - Sales Report
   /admin/userManagement/blockuser/:id:
     patch:
       operationId: block user
@@ -898,6 +908,7 @@ paths:
       - description: coupon_id
         in: query
         name: coupon_id
+        required: true
         type: string
       produces:
       - application/json
@@ -916,7 +927,7 @@ paths:
       tags:
       - User Coupon
   /user/coupon/cancelcoupon/:cartid/:orderid/:couponid:
-    delete:
+    patch:
       operationId: user cancel coupon
       parameters:
       - description: cart_ID
@@ -930,6 +941,7 @@ paths:
       - description: coupon_id
         in: query
         name: coupon_id
+        required: true
         type: string
       produces:
       - application/json
@@ -1023,6 +1035,31 @@ paths:
       summary: user signin
       tags:
       - 11.User Authentication
+  /user/order/cancel/:orderid:
+    patch:
+      operationId: user cancel order
+      parameters:
+      - description: order_ID
+        in: query
+        name: order_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: cancel order
+      tags:
+      - User Order
   /user/order/checkout/:cartid/:productid/:shippingid:
     post:
       operationId: user add to checkout
@@ -1030,12 +1067,10 @@ paths:
       - description: cart_ID
         in: query
         name: cart_id
-        required: true
         type: string
       - description: product_ID
         in: query
         name: product_id
-        required: true
         type: string
       - description: address_ID
         in: query
@@ -1058,15 +1093,9 @@ paths:
       summary: Add to checkout
       tags:
       - User Order
-  /user/order/ordersummery/:orderid:
+  /user/order/ordersummery:
     get:
       operationId: user view order summery
-      parameters:
-      - description: order_ID
-        in: query
-        name: order_id
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1083,37 +1112,6 @@ paths:
       summary: View order summery
       tags:
       - User Order
-  /user/order/update/:orderid:
-    patch:
-      operationId: user update order
-      parameters:
-      - description: order_ID
-        in: query
-        name: order_id
-        required: true
-        type: string
-      - description: Order Updates
-        in: body
-        name: OrderUpdates
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/utils.Response'
-      security:
-      - BearerAuth: []
-      summary: update order
-      tags:
-      - User Order
   /user/shipping/adddetails:
     post:
       operationId: user add shipping details
@@ -1123,7 +1121,7 @@ paths:
         name: newAddress
         required: true
         schema:
-          $ref: '#/definitions/domain.ShippingDetails'
+          $ref: '#/definitions/handler.Shipping'
       produces:
       - application/json
       responses:

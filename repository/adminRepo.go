@@ -330,7 +330,7 @@ func (ar *AdminRepo) ListCoupon(page, perPage int) ([]domain.CouponResponse, uti
 	if err != nil {
 		return coupons, metaData, err
 	}
-	results := ar.DB.Model(&coupon).Select("id", "coupon_code", "discount_amount", "user_id", "product_id", "min_cost", "expires_at", "coupon_status").Offset(offset).Limit(perPage).Find(&coupons)
+	results := ar.DB.Model(&coupon).Select("coupon_code", "discount_amount", "user_id", "product_id", "min_cost", "expires_at", "coupon_status").Offset(offset).Limit(perPage).Find(&coupons)
 	if results.Error != nil {
 		return coupons, metaData, results.Error
 	}
@@ -348,4 +348,34 @@ func (ar *AdminRepo) DeleteCoupon(coupon_id string) error {
 	} else {
 		return result.Error
 	}
+}
+
+//Sales
+
+func (ar *AdminRepo) SalesReport(page, perPage int) (interface{}, utils.MetaData, error) {
+	var totalRecords int64
+
+	ar.DB.Model(&domain.OrderReport{}).Count(&totalRecords)
+	metaData, offset, err := utils.ComputeMetaData(page, perPage, int(totalRecords))
+
+	if err != nil {
+		return nil, metaData, err
+	}
+	type Sales_Report struct {
+		Order_ID       string
+		User_ID        string
+		Product_ID     string
+		Quantity       int
+		TotalPrice     float32
+		Payment_ID     string
+		Order_Status   string
+		Payment_Status string
+	}
+	sales_Report := []Sales_Report{}
+	result := ar.DB.Model(&domain.OrderReport{}).Select("orders.order_id", "orders.user_id", "order_reports.product_id", "order_reports.quantity", "order_reports.total_price",
+		"payment_id", "order_reports.order_status", "payment_status").Joins("right join orders on orders.order_id=order_reports.order_id").Offset(offset).Limit(perPage).Find(&sales_Report)
+	if result.Error != nil {
+		return nil, metaData, result.Error
+	}
+	return sales_Report, metaData, nil
 }

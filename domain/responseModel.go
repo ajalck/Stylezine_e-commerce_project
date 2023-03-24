@@ -53,6 +53,7 @@ type CartResponse struct {
 	Cart_ID       string  `json:"cart_id"`
 	User_id       string  `json:"user_id"`
 	Product_id    string  `json:"product_id"`
+	Coupon_id     string  `json:"coupon_id"`
 	Item          string  `json:"item"`
 	Product_Name  string  `json:"product_name"`
 	Product_Image string  `json:"product_image"`
@@ -86,23 +87,17 @@ type CouponResponse struct {
 	Coupon_Status   string    `json:"coupon_status"`
 }
 type OrderSummery struct {
-	// User_ID          uint    `json:"user_id" gorm:"not null"`
-	// Shipping_Name    string  `json:"shipping_name"`
-	// Shipping_Address string  `json:"shipping_address"`
-	// Product_Name     string  `json:"product_name"`
-	// Discription      string  `json:"discription"`
-	// Product_Image    string  `json:"product_image"`
-	User_ID         uint    `json:"user_id" gorm:"not null"`
-	Product_ID      uint    `json:"product_id" gorm:"not null"`
-	Shipping_ID     uint    `json:"shipping_id" gorm:"not null"`
-	Coupon_ID       uint    `json:"coupon_id"`
-	Quantity        int     `json:"quantity" gorm:"not null"`
-	Discount        float32 `json:"discount"`
-	TotalPrice      float32 `json:"totalprice"`
-	Grand_Total     float32 `json:"grand_total"`
-	GST             float32 `json:"gst"`
-	Final           float32 `json:"final"`
-	Mode_of_Payment string  `json:"mode_of_payment"`
-	Order_Status    string  `json:"order_status"`
-	Payment_Status  string  `json:"payment_status"`
+	Order_ID         string  `json:"order_id"`
+	User_ID          string  `json:"user_id" gorm:"not null"`
+	Shipping_ID      string  `json:"shipping_id" gorm:"not null"`
+	Shipping_Name    string  `json:"shipping_name"`
+	Shipping_Address string  `json:"shipping_address"`
+	Coupon_ID        string  `json:"coupon_id"`
+	Discount         string  `json:"discount"`
+	Grand_Total      float32 `json:"grand_total"`
+	GST              float32 `json:"gst"`
+	Final            float32 `json:"final"`
+	Mode_of_Payment  string  `json:"mode_of_payment"`
+	Order_Status     string  `json:"order_status"`
+	Payment_Status   string  `json:"payment_status"`
 }

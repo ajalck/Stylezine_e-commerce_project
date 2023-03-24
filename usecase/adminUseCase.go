@@ -264,3 +264,12 @@ func (au *adminUseCase) DeleteCoupon(coupon_id string) error {
 
 	return nil
 }
+
+// Sales
+func (au *adminUseCase) SalesReport(page, perPage int) (interface{}, utils.MetaData, error) {
+	sales_report, metaData, err := au.adminRepo.SalesReport(page, perPage)
+	if err != nil {
+		return nil, metaData, err
+	}
+	return sales_report, metaData, err
+}

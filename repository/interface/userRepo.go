@@ -17,11 +17,11 @@ type UserRepository interface {
 	DeleteWishList(wishlist_id string) error
 	//Cart
 	AddCart(user_id string, product_id string) (error, string)
-	ViewCart(user_id string, page, perPage int) ([]domain.CartResponse,float32, utils.MetaData, error)
+	ViewCart(user_id string, page, perPage int) ([]domain.CartResponse, float32, utils.MetaData, error)
 	DeleteCart(user_id, product_id string) error
 	//Coupon
 	ListCoupon(user_id, product_id string) ([]domain.CouponResponse, error)
-	ApplyCoupon(cart_id, order_id , coupon_id string) error
+	ApplyCoupon(cart_id, order_id, coupon_id string) error
 	CancelCoupon(cart_id, order_id, coupon_id string) error
 	//Shipping
 	AddShippingDetails(user_id string, newAddress domain.ShippingDetails) error
@@ -29,6 +29,6 @@ type UserRepository interface {
 	DeleteShippingDetails(user_id, address_id string) error
 	//Order
 	CheckOut(cart_id, user_id, product_id, address_id string) (string, error)
-	OrderSummery(order_id string) ([]domain.OrderSummery, error)
-	UpdateOrder(order_id, product_id string, orderUpdates interface{}) error
+	OrderSummery(user_id string) (interface{}, domain.OrderSummery, error)
+	CancelOrder(order_id string) error
 }

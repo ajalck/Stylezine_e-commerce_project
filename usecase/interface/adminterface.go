@@ -33,6 +33,8 @@ type AdminUseCase interface {
 	AddCoupon(coupon domain.Coupon) error
 	ListCoupon(page, perPage int) ([]domain.CouponResponse, utils.MetaData, error)
 	DeleteCoupon(coupon_id string) error
+
+	SalesReport(page, perPage int) (interface{}, utils.MetaData, error)
 }
 type AdminAuth interface {
 	VerifyAdmin(email string, password, userRole string) (bool, error)

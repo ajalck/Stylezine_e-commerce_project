@@ -50,8 +50,8 @@ func UserServer(routes *gin.Engine,
 			order := user.Group("/order")
 			{
 				order.POST("/checkout/:cartid/:productid/:shippingid", userHandler.CheckOut)
-				order.GET("/ordersummery/:orderid", userHandler.OrderSummery)
-				order.PATCH("/update/:orderid", userHandler.UpdateOrder)
+				order.GET("/ordersummery", userHandler.OrderSummery)
+				order.PATCH("/cancel/:orderid", userHandler.CancelOrder)
 			}
 		}
 	}
@@ -109,6 +109,7 @@ func AdminServer(routes *gin.Engine,
 				coupon.GET("/list/:page/:records", adminHandler.ListCoupon)
 				coupon.DELETE("/delete/:couponid", adminHandler.DeleteCoupon)
 			}
+			admin.GET("/sales_report", adminHandler.SalesReport)
 		}
 
 	}

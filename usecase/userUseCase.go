@@ -171,19 +171,19 @@ func (uc *userUseCase) CheckOut(cart_id, user_id, product_id, address_id string)
 	}
 	return id, nil
 }
-func (uc *userUseCase) OrderSummery(order_id string) ([]domain.OrderSummery, error) {
-	orderSummery, err := uc.userRepo.OrderSummery(order_id)
+func (uc *userUseCase) OrderSummery(user_id string) (interface{}, domain.OrderSummery, error) {
+	productDet, orderSummery, err := uc.userRepo.OrderSummery(user_id)
 	if err != nil {
-		return orderSummery, err
+		return productDet, orderSummery, err
 	}
-	return orderSummery, err
+	return productDet, orderSummery, err
 }
-func (uc *userUseCase) UpdateOrder(orders_id, product_id string, orderUpdates interface{}) error {
-	_, err := uc.userRepo.OrderSummery(orders_id)
+func (uc *userUseCase) CancelOrder(order_id string) error {
+	_, _, err := uc.userRepo.OrderSummery(order_id)
 	if err != nil {
 		return errors.New("No order found in checkout")
 	}
-	err = uc.userRepo.UpdateOrder(orders_id, product_id, orderUpdates)
+	err = uc.userRepo.CancelOrder(order_id)
 	if err != nil {
 		return err
 	}

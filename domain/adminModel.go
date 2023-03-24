@@ -37,9 +37,17 @@ type Coupon struct {
 	gorm.Model
 	Coupon_Code     string    `json:"coupon_code"`
 	Discount_amount float32   `json:"discount_amount"`
-	User_ID         string    `json:"user_id"`
-	Product_ID      string    `json:"product_id"`
+	User_ID         *string   `json:"user_id"`
+	Product_ID      *string   `json:"product_id"`
 	Min_Cost        float32   `json:"min_cost"`
 	Expires_At      time.Time `json:"expires_at"`
 	Coupon_Status   string    `json:"coupon_status"`
+}
+type OrderReport struct {
+	Order_ID     string  `json:"order_id" gorm:"not null"`
+	Order        Order   `gorm:"foreignkey:Order_ID;references:Order_ID"`
+	Product_ID   string  `json:"product_id" gorm:"not null"`
+	Quantity     int     `json:"quantity" gorm:"not null"`
+	TotalPrice   float32 `json:"totalprice"`
+	Order_Status string  `json:"order_status"`
 }

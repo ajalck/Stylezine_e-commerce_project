@@ -27,10 +27,17 @@ type Cart struct {
 	Cart_ID     string  `json:"cart_id" gorm:"not null"`
 	User_ID     string  `json:"user_id"`
 	Product_ID  string  `json:"product_id"`
-	Coupon_id   string  `json:"coupon_id"`
 	Quantity    int     `json:"quantity"`
 	Unit_Price  float32 `json:"unit_price"`
 	Total_Price float32 `json:"total_price"`
+}
+type Final_Cart struct {
+	gorm.Model
+	Cart_ID     string  `json:"cart_id" gorm:"not null"`
+	Total_Price float32 `json:"total_price"`
+	Coupon_ID   string  `json:"coupon_id"`
+	Discount    float32 `json:"discount"`
+	Grand_Total float32 `json:"grand_total"`
 }
 type ShippingDetails struct {
 	gorm.Model
@@ -50,13 +57,10 @@ type Order struct {
 	gorm.Model
 	Order_ID        string  `json:"order_id" gorm:"not null"`
 	User_ID         string  `json:"user_id" gorm:"not null"`
-	Product_ID      string  `json:"product_id" gorm:"not null"`
 	Shipping_ID     string  `json:"shipping_id" gorm:"not null"`
 	Coupon_ID       string  `json:"coupon_id"`
 	Payment_ID      string  `json:"payment_id"`
-	Quantity        int     `json:"quantity" gorm:"not null"`
 	Discount        float32 `json:"discount"`
-	TotalPrice      float32 `json:"totalprice"`
 	Grand_Total     float32 `json:"grand_total"`
 	GST             float32 `json:"gst"`
 	Final           float32 `json:"final"`

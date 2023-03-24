@@ -36,4 +36,6 @@ type AdminRepository interface {
 	AddCoupon(coupon domain.Coupon) error
 	ListCoupon(page, perPage int) ([]domain.CouponResponse, utils.MetaData, error)
 	DeleteCoupon(coupon_id string) error
+
+	SalesReport(page, perPage int) (interface{}, utils.MetaData, error)
 }

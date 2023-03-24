@@ -664,8 +664,8 @@ func (ah *AdminHandler) DeleteProducts(c *gin.Context) {
 type AddCoupon struct {
 	Coupon_Code     string  `json:"coupon_code"`
 	Discount_amount float32 `json:"discount_amount"`
-	User_ID         string  `json:"user_id"`
-	Product_ID      string  `json:"product_id"`
+	User_ID         *string `json:"user_id"`
+	Product_ID      *string `json:"product_id"`
 	Min_Cost        float32 `json:"min_cost"`
 	Validity        int64   `json:"validity"`
 }
@@ -763,6 +763,38 @@ func (ah *AdminHandler) DeleteCoupon(c *gin.Context) {
 		return
 	}
 	response := utils.SuccessResponse("One coupon removed successfully", nil)
+	c.Writer.WriteHeader(200)
+	utils.ResponseJSON(c, response)
+}
+
+// @Summary Sales report
+// @ID sales report
+// @Tags Sales Report
+// @Security BearerAuth
+// @Produce json
+// @Param page query string true "Page No"
+// @Param records query string true "No of records"
+// @Success 200 {object} utils.Response{}
+// @Failure 422 {object} utils.Response{}
+// @Router /admin/sales_report [get]
+func (ah *AdminHandler) SalesReport(c *gin.Context) {
+	page, _ := strconv.Atoi(c.Query("page"))
+	perPage, _ := strconv.Atoi(c.Query("records"))
+	sales_report, metaData, err := ah.adminUseCase.SalesReport(page, perPage)
+	if err != nil {
+		response := utils.ErrorResponse("Couldn't list the sales report", err.Error(), nil)
+		c.Writer.WriteHeader(http.StatusNotFound)
+		utils.ResponseJSON(c, response)
+		return
+	}
+	Results := struct {  
+		Sales_Report interface{}
+		MetaData     utils.MetaData
+	}{
+		Sales_Report: sales_report,
+		MetaData:     metaData,
+	}
+	response := utils.SuccessResponse("Here is the sales report :", Results)
 	c.Writer.WriteHeader(200)
 	utils.ResponseJSON(c, response)
 }
