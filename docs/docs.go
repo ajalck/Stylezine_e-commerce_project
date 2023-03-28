@@ -1148,6 +1148,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/checkout/razorpay": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Payment"
+                ],
+                "summary": "Payment",
+                "operationId": "user payment",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user/coupon/applycoupon/:cartid/:orderid/:couponid": {
             "post": {
                 "security": [
@@ -1477,6 +1508,37 @@ const docTemplate = `{
                 ],
                 "summary": "View order summery",
                 "operationId": "user view order summery",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/payment-success": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Payment"
+                ],
+                "summary": "Payment",
+                "operationId": "user payment_Status",
                 "responses": {
                     "200": {
                         "description": "OK",
