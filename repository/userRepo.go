@@ -484,6 +484,7 @@ func (ur *UserRepo) CheckOut(cart_id, user_id, product_id, address_id string) (s
 		return id, nil
 	} else {
 		product, err := ur.ViewProduct(product_id)
+	
 		if err != nil {
 			return "", err
 		}
@@ -504,6 +505,9 @@ func (ur *UserRepo) CheckOut(cart_id, user_id, product_id, address_id string) (s
 			Shipping_ID:    address_id,
 			Coupon_ID:      "not applied",
 			Discount:       0,
+			Grand_Total:    *product.Unit_Price,
+			GST:            (*product.Unit_Price * 12) / 100,
+			Final:          *product.Unit_Price + ((*product.Unit_Price * 12) / 100),
 			Order_Status:   "pending",
 			Payment_Status: "pending",
 		})
@@ -525,8 +529,10 @@ func (ur *UserRepo) OrderSummery(user_id string) (interface{}, domain.OrderSumme
 	}
 	orderreport := []domain.OrderReport{}
 	productDet := []ProductDet{}
-	results := ur.DB.Find(&orderreport).Where("user_id", user_id, "order_status", "pending")
-	order_id := orderreport[0].Order_ID
+	orders := &domain.Order{}
+	results := ur.DB.Table("orders").Where(&domain.Order{User_ID: user_id, Order_Status: "pending"}).Find(&orders)
+	order_id := orders.Order_ID
+	results = ur.DB.Where("order_id", order_id).Find(&orderreport)
 	if results.Error != nil {
 		return nil, orderSummery, results.Error
 	}
@@ -543,7 +549,7 @@ func (ur *UserRepo) OrderSummery(user_id string) (interface{}, domain.OrderSumme
 		}
 		productDet = append(productDet, temp)
 	}
-	results = ur.DB.Model(&domain.Order{}).Where("order_id", order_id).Joins("right join shipping_details on shipping_details.shipping_id=orders.shipping_id").
+	results = ur.DB.Model(&domain.Order{}).Where(&domain.Order{Order_ID: order_id, Order_Status: "pending"}).Joins("right join shipping_details on shipping_details.shipping_id=orders.shipping_id").
 		Select("order_id", "orders.user_id", "shipping_details.shipping_id", "concat(first_name,' ',last_name)as shipping_name", "address as shipping_address",
 			"coupon_id", "discount", "grand_total", "gst", "final", "mode_of_payment", "order_status", "payment_status").
 		First(&orderSummery)

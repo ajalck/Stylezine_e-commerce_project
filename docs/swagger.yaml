@@ -893,6 +893,25 @@ paths:
       summary: View cart
       tags:
       - User Cart
+  /user/checkout/razorpay:
+    get:
+      operationId: user payment
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Payment
+      tags:
+      - User Payment
   /user/coupon/applycoupon/:cartid/:orderid/:couponid:
     post:
       operationId: user apply coupon
@@ -1112,6 +1131,25 @@ paths:
       summary: View order summery
       tags:
       - User Order
+  /user/payment-success:
+    get:
+      operationId: user payment_Status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Payment
+      tags:
+      - User Payment
   /user/shipping/adddetails:
     post:
       operationId: user add shipping details

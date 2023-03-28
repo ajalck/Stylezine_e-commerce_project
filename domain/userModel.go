@@ -55,16 +55,17 @@ type ShippingDetails struct {
 }
 type Order struct {
 	gorm.Model
-	Order_ID        string  `json:"order_id" gorm:"not null"`
-	User_ID         string  `json:"user_id" gorm:"not null"`
-	Shipping_ID     string  `json:"shipping_id" gorm:"not null"`
-	Coupon_ID       string  `json:"coupon_id"`
-	Payment_ID      string  `json:"payment_id"`
-	Discount        float32 `json:"discount"`
-	Grand_Total     float32 `json:"grand_total"`
-	GST             float32 `json:"gst"`
-	Final           float32 `json:"final"`
-	Mode_of_Payment string  `json:"mode_of_payment"`
-	Order_Status    string  `json:"order_status"`
-	Payment_Status  string  `json:"payment_status"`
+	Order_ID          string  `json:"order_id" gorm:"not null"`
+	User_ID           string  `json:"user_id" gorm:"not null"`
+	Shipping_ID       string  `json:"shipping_id" gorm:"not null"`
+	Coupon_ID         string  `json:"coupon_id"`
+	RazorPay_Order_ID string  `json:"razorpay_order_id"`
+	Payment_ID        string  `json:"payment_id"`
+	Discount          float32 `json:"discount"`
+	Grand_Total       float32 `json:"grand_total"`
+	GST               float32 `json:"gst"`
+	Final             float32 `json:"final"`
+	Mode_of_Payment   string  `json:"mode_of_payment"`
+	Order_Status      string  `json:"order_status"`
+	Payment_Status    string  `json:"payment_status"`
 }

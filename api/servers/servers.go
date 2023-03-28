@@ -3,6 +3,7 @@ package servers
 import (
 	"ajalck/e_commerce/api/handler"
 	"ajalck/e_commerce/api/middleware"
+	"ajalck/e_commerce/payment"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,12 +11,18 @@ import (
 func UserServer(routes *gin.Engine,
 	userHandler handler.UserHandler,
 	userAuthHandler handler.UserAuthHandler,
-	Middleware middleware.Middleware) {
+	Middleware middleware.Middleware,
+	payment payment.Payment) {
+
+	routes.LoadHTMLGlob("payment/templates/*.html")
+
 	user := routes.Group("/user")
 	{
 		user.POST("/signup", userHandler.CreateUser)
 		user.POST("/login", userAuthHandler.UserSignin)
 		user.GET("/listproducts/:page/:records", userHandler.ListProducts)
+		user.GET("/checkout/razorpay", payment.RazorPay)
+		user.GET("/payment-success", payment.PaymentStatus)
 
 		user.Use(Middleware.AuthorizeJWT)
 		{

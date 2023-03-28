@@ -6,6 +6,7 @@ import (
 	"ajalck/e_commerce/api/servers"
 	"ajalck/e_commerce/config"
 	_ "ajalck/e_commerce/docs"
+	"ajalck/e_commerce/payment"
 	"ajalck/e_commerce/repository"
 	repoInt "ajalck/e_commerce/repository/interface"
 	"ajalck/e_commerce/usecase"
@@ -28,9 +29,11 @@ func init() {
 }
 
 func main() {
+
 	port := os.Getenv("PORT")
 	router := gin.New()
 	router.Use(gin.Logger())
+
 	// Swagger docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	db := config.ConnectDB()
@@ -43,6 +46,7 @@ func main() {
 		userAuth        services.UserAuth        = usecase.NewUserAuthService(userRepo)
 		jwtService      services.JwtServices     = usecase.NewJWTService()
 		userAuthHandler *handler.UserAuthHandler = handler.NewUserAuthHandler(userAuth, jwtService)
+		payment         payment.Payment          = payment.PaymentHandler(db)
 	)
 	var middleware middleware.Middleware = middleware.NewMiddleware(jwtService)
 	var (
@@ -53,7 +57,7 @@ func main() {
 		adminAuthHandler *handler.AdminAuthHandler = handler.NewAdminAuthHandler(adminAuth, jwtService)
 	)
 	//routing
-	servers.UserServer(router, *userHandler, *userAuthHandler, middleware)
+	servers.UserServer(router, *userHandler, *userAuthHandler, middleware, payment)
 	servers.AdminServer(router, *adminHandler, *adminAuthHandler, middleware)
 	router.Run(":" + port)
 }
