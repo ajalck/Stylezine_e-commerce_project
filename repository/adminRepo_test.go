@@ -117,7 +117,7 @@ func TestBlockUser(t *testing.T) {
 
 	mockQuery := "UPDATE users SET status=\\$1 WHERE user_id=\\$2;"
 
-	mock.ExpectQuery(mockQuery).WithArgs("blocked", "abcd").WillReturnRows()
+	mock.ExpectQuery(mockQuery).WithArgs("blocked", "abcd")
 
 	repo := &AdminRepo{DB: gormDB}
 
