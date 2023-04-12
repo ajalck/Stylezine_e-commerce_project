@@ -220,7 +220,8 @@ func (ur *UserRepo) UpdateCoupon() error {
 	coupons := []domain.Coupon{}
 	ur.DB.Find(&coupons)
 	for i := range coupons {
-		if coupons[i].Expires_At.Compare(time.Now()) == -1 {
+		result := coupons[i].Expires_At.Compare(time.Now())
+		if result == -1 {
 			result := ur.DB.Table("coupons").Where("id", coupons[i].ID).Update("coupon_status", "expired")
 			if result.Error != nil {
 				return result.Error
@@ -484,7 +485,7 @@ func (ur *UserRepo) CheckOut(cart_id, user_id, product_id, address_id string) (s
 		return id, nil
 	} else {
 		product, err := ur.ViewProduct(product_id)
-	
+
 		if err != nil {
 			return "", err
 		}
