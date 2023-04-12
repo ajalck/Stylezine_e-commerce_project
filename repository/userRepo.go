@@ -220,8 +220,8 @@ func (ur *UserRepo) UpdateCoupon() error {
 	coupons := []domain.Coupon{}
 	ur.DB.Find(&coupons)
 	for i := range coupons {
-		result := coupons[i].Expires_At.Compare(time.Now())
-		if result == -1 {
+		result := coupons[i].Expires_At.After(time.Now())
+		if result == false {
 			result := ur.DB.Table("coupons").Where("id", coupons[i].ID).Update("coupon_status", "expired")
 			if result.Error != nil {
 				return result.Error
