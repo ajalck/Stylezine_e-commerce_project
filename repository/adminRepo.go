@@ -147,7 +147,6 @@ func (ar *AdminRepo) AddCategory(category domain.Category) error {
 
 }
 func (ar *AdminRepo) ListCategory() ([]domain.Category, error) {
-
 	var categories []domain.Category
 	dbResult := ar.DB.Find(&categories)
 	if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {

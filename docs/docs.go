@@ -2109,7 +2109,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Go + Gin Stylezine API",
-	Description:      "This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/ajalck/Stylezine_e-commerce_project",
+	Description:      "Stylezine is an E-commerce platform to purchase and sell clothing itmes. Visit my GitHub repository: https://github.com/ajalck/Stylezine_e-commerce_project",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

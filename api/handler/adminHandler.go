@@ -708,7 +708,6 @@ func (ah *AdminHandler) AddCoupon(c *gin.Context) {
 	response := utils.SuccessResponse("New Coupon added", nil)
 	c.Writer.WriteHeader(http.StatusOK)
 	utils.ResponseJSON(c, response)
-	return
 
 }
 

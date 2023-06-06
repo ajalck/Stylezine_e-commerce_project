@@ -32,7 +32,7 @@ type NewUser struct {
 
 // @title Go + Gin Stylezine API
 // @version 1.0
-// @description This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/ajalck/Stylezine_e-commerce_project
+// @description Stylezine is an E-commerce platform to purchase and sell clothing itmes. Visit my GitHub repository: https://github.com/ajalck/Stylezine_e-commerce_project
 
 // @contact.name API Support
 // @contact.url https://github.com/ajalck/ajal_portfolio

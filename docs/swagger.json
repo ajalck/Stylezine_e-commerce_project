@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a sample server Job Portal server. You can visit the GitHub repository at https://github.com/ajalck/Stylezine_e-commerce_project",
+        "description": "Stylezine is an E-commerce platform to purchase and sell clothing itmes. Visit my GitHub repository: https://github.com/ajalck/Stylezine_e-commerce_project",
         "title": "Go + Gin Stylezine API",
         "contact": {
             "name": "API Support",

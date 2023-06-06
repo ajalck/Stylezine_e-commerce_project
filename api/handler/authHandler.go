@@ -4,7 +4,6 @@ import (
 	"ajalck/e_commerce/domain"
 	services "ajalck/e_commerce/usecase/interface"
 	"ajalck/e_commerce/utils"
-	_ "ajalck/e_commerce/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
