@@ -127,5 +127,3 @@ func TestBlockUser(t *testing.T) {
 		t.Fatalf("mock expectations were not met:%v", err)
 	}
 }
-
-func hello()
