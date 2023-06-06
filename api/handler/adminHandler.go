@@ -787,7 +787,7 @@ func (ah *AdminHandler) SalesReport(c *gin.Context) {
 		utils.ResponseJSON(c, response)
 		return
 	}
-	Results := struct {  
+	Results := struct {
 		Sales_Report interface{}
 		MetaData     utils.MetaData
 	}{
