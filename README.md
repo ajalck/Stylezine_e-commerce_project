@@ -1,4 +1,4 @@
-# E-commerce Web App
+# Stylezine
 
 This is an e-commerce web application created with Go's backend framework Gin and PostgreSQL. The application consists of both admin and user sections, offering different functionalities to each role. Administrators have the ability to manage products, users, orders, and more. Users can view products, add them to their wish list or cart, make purchases, and apply applicable coupons. Authentication and authorization are handled using JSON Web Tokens (JWT), and the PostgreSQL database is simplified with GORM. The app also includes payment integration with Razorpay.
 
